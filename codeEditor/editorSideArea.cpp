@@ -61,7 +61,7 @@ void EditorSideArea::lineNumberAreaPaintEvent(QPaintEvent *event)
 QSize EditorSideArea::sizeHint() const
 {
     int height = boundingTextEdit->viewport()->height();
-    return QSize(boundingTextEdit->lineNumberAreaWidth(), height);
+    return QSize(boundingTextEdit->countLineNumberWigetWidth(), height);
     //return QSize(((ForceAccess::ForceQPlainText*)boundingTextEdit)->viewportMargins().left(), 0);
 }
 

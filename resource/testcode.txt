@@ -1,0 +1,258 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+#include<Windows.h>
+#include<conio.h>
+#define WIDE 60
+# define HIGH 20
+//1设置地图边界
+//2初始化蛇的初始坐标、以及事务
+//3、将蛇和食物显示
+//4 蛇的移动（WASD）
+/*
+		规则：
+		蛇碰到强死掉
+		蛇碰到自己死掉
+		蛇碰到食物，身体增长，增加分数
+*/
+//5.蛇死掉显示分数
+//存储蛇的每一节的坐标
+typedef struct _body
+{
+	int x;
+	int y;
+}BODY;
+typedef struct _snake
+{
+	//存储蛇的身体
+	BODY list[WIDE * HIGH];//身体的每一节坐标
+	int size;//记录身体长度
+	BODY food;//食物的位置
+	int dx;//x移动方向
+	int dy;//y移动方向
+	//记录设尾位置
+	int lastx;
+	int lasty;
+}SNAKE;
+ 
+//初始化食物坐标
+void initFood(SNAKE* s)
+{
+	srand(time(NULL));
+	s->food.x = rand() % WIDE;
+	s->food.y = rand() % HIGH;
+	
+}
+ 
+//初始化蛇
+void initSnake(SNAKE* s)
+{
+	//头部
+	s->list[0].x = WIDE / 2;
+	s->list[0].y = HIGH / 2;
+	//第一节
+	s->list[1].x = WIDE / 2-1;
+	s->list[1].y = HIGH / 2;
+	//记录身体大小
+	s->size = 2;
+	//初始化食物的坐标
+	initFood(s);
+	//默认向右移动
+	s->dx = 1;
+	s->dy = 0;
+}
+//显示蛇
+void showUi(SNAKE* s)
+{
+	/*
+		每次显示都要设置光标的位置
+		
+	*/
+	//显示蛇
+	COORD cor;
+	for (int i = 0; i < s->size; ++i)
+	{
+		//设置光标的位置
+		
+		cor.X = s->list[i].x;
+		cor.Y = s->list[i].y;
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),cor);
+ 
+		//蛇头
+		if (i == 0)
+		{
+			printf("@");
+			continue;
+		}
+		printf("*");
+	}
+	//显示食物
+	cor.X = s->food.x;
+	cor.Y = s->food.y;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),cor);
+	printf("#");
+	//清除掉蛇尾
+	cor.X = s->lastx;
+	cor.Y = s->lasty;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cor);
+	printf(" ");
+ 
+}
+//更新的蛇的坐标
+void moveSnake(SNAKE* s)
+{
+        //记录下蛇尾的位置
+	s->lastx = s->list[s->size - 1].x;
+	s->lasty = s->list[s->size - 1].y;
+	for (int i = s->size-1; i >0; --i)
+	{
+		s->list[i].x = s->list[i - 1].x;
+		s->list[i].y = s->list[i - 1].y;
+	}
+	s->list[0].x += s->dx;
+	s->list[0].y += s->dy;
+	
+}
+ 
+void controlSnake(SNAKE* s)
+{
+	char key=0;
+	//判断按键
+	while (_kbhit())
+	{
+		key = _getch();
+	}
+	switch (key)
+	{
+	case 'a':
+		s->dx = -1;
+		s->dy = 0;
+		break;
+	case 's':
+		s->dx = 0;
+		s->dy = 1;
+		break;
+	case 'd':
+		s->dx = 1;
+		s->dy = 0;
+		break;
+	case 'w':
+		s->dx = 0;
+		s->dy = -1;
+		break;
+	default:
+		break;
+	}
+}
+ 
+//游戏结束
+void gameEnd(SNAKE* s)
+{
+	COORD cor;
+	cor.X = 0;
+	cor.Y = HIGH + 1;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cor);
+	printf("游戏结束，最终得分为%d\n", (s->size - 2) * 10);
+	//直接退出程序
+	exit(0);
+}
+//蛇吃到自己
+void snakeEatSelf(SNAKE* s)
+{
+	for (int i = 1; i < s->size; ++i)
+	{
+		if (s->list[0].x == s->list[i].x && s->list[0].y == s->list[i].y)
+		{
+			gameEnd(s);
+		}
+	}
+}
+//吃到食物
+void snakeEatFood(SNAKE* s)
+{
+	if (s->list[0].x == s->food.x && s->list[0].y == s->food.y)
+	{
+		//食物重置
+		initFood(s);
+		//蛇加长
+		s->size++;//增加后的坐标在移动的时候会自己进行加长
+	}
+}
+ 
+//开始游戏
+void startGame(SNAKE* s)
+{
+	//每次对蛇头是否碰墙进行判断
+	while (s->list[0].x<WIDE&&s->list[0].x>=0&&s->list[0].y<HIGH&&s->list[0].y>0)
+	{
+		//控制方向
+		 controlSnake(s);
+		//更新蛇的坐标
+		moveSnake(s);
+		//system("cls");//清屏
+		//蛇移动
+		showUi(s);
+		//判断蛇是否碰到自己
+		snakeEatSelf(s);
+		//吃到食物
+		snakeEatFood(s);
+		//蛇的速度可以通过睡眠时间进行调整
+		Sleep(200);
+ 
+	}
+	gameEnd(s);
+}
+//初始化边界
+void initWall()
+{
+	COORD cor;
+	for (int i = 0; i <= WIDE; ++i)
+	{
+		for (int j = 0; j <= HIGH; ++j)
+		{
+			if (i == 0 || i == WIDE||j==0||j==HIGH)
+			{
+ 
+				COORD cor;
+				cor.X = i;
+				cor.Y = j;
+				SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cor);
+				printf("+");
+			}
+		}
+	}
+}
+//隐藏光标
+void hideCursor()
+{
+	CONSOLE_CURSOR_INFO cursor;
+	cursor.bVisible = FALSE;
+	cursor.dwSize = sizeof(cursor);
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleCursorInfo(handle, &cursor);
+}
+int main()
+{
+	//隐藏光标
+	hideCursor();
+	//初始化地图
+	initWall();
+	//蛇类型定义
+	SNAKE* snake = (SNAKE*)malloc(sizeof(SNAKE));
+	
+	//初始化蛇和食物
+	initSnake(snake);
+	//显示蛇
+	showUi(snake);
+	//开始游戏
+	startGame(snake);
+ 
+ 
+	free(snake);
+	//程序在HIGH+1行后面输出
+	COORD cor;
+	cor.X = 0;
+	cor.Y =HIGH+2;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), cor);
+	return 0;
+}

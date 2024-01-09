@@ -20,7 +20,7 @@ BreakPointArea::~BreakPointArea()
 QSize BreakPointArea::sizeHint() const
 {
     int height = boundingTextEdit->viewport()->height();
-    return QSize(boundingTextEdit->countBreakPointNeedWidth(), height);
+    return QSize(boundingTextEdit->countBreakPointWigetWidth(), height);
 }
 
 CodeEditor *BreakPointArea::getBoundingTextEdit() const
