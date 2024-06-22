@@ -59,6 +59,11 @@ CodeEditor::~CodeEditor()
 
 }
 
+void CodeEditor::setBreakComponent(bool visible)
+{
+    breakPointArea->setVisible(visible);
+}
+
 void CodeEditor::setLineHighlight(int lineNum)
 {
     QList<QTextEdit::ExtraSelection> extraSelections;//提供一种方式显示选择的文本

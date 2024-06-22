@@ -14,7 +14,7 @@ public:
     CodeEditor(QWidget* parent = nullptr);
     ~CodeEditor();
 
-    void setBreakComponent(bool visible);
+    void setBreakComponent(bool visible = false);
 
     // 常用的函数
 
