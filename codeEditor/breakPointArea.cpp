@@ -58,36 +58,26 @@ void BreakPointArea::paintEvent(QPaintEvent *event)
     painter.setBrush(Qt::red);//设置画刷
     painter.setRenderHint(QPainter::Antialiasing); // 抗锯齿
     // 如果块有效
-    // while (block.isValid() && top <= event->rect().bottom())
-    // {
+    while (block.isValid() && top <= event->rect().bottom())
+    {
 
-    //     // 块可见，底部坐标大于当前事件的顶部坐标
-    //     if (block.isVisible() && bottom >= event->rect().top())
-    //     {
-    //         // 因为块呈序列的，从0开始，所以可以将块号+1，作为行号
-    //         QString number = QString::number(blockNumber + 1);
+        // 块可见，底部坐标大于当前事件的顶部坐标
+        if (block.isVisible() && bottom >= event->rect().top())
+        {
+            if(breakPointList.contains(blockNumber)){
+                // 设置矩形的左上角坐标和高度宽度
+                int height = fontMetrics().height();
+                painter.drawEllipse(0, top, height*0.8,height*0.8);
+            }
 
-    //         // 设置矩形的左上角坐标和高度宽度
-    //         int height = fontMetrics().height();
-    //         painter.drawEllipse(0, top, height*0.8,height*0.8);
-    //     }
+        }
 
-    //     block = block.next();
-    //     top = bottom;
-    //     bottom = top + qRound(boundingTextEditForce->blockBoundingRect(block).height());
-    //     ++blockNumber;
-    // }
-
-
-
-    for(int linenum : breakPointList){
-
-        // QTextDocument* document = boundingTextEditForce->document();
-        // block = document->findBlockByLineNumber(linenum);
-        int height = fontMetrics().height();
-        int y = top + lineHight*linenum;
-        painter.drawEllipse(0, y, height*0.8,height*0.8);
+        block = block.next();
+        top = bottom;
+        bottom = top + qRound(boundingTextEditForce->blockBoundingRect(block).height());
+        ++blockNumber;
     }
+
 }
 
 void BreakPointArea::mousePressEvent(QMouseEvent *event)
