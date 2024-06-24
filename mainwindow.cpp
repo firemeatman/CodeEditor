@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     file.close();
     codeEditor = new CodeEditor(this);
     codeEditor->setPlainText(text);
+    codeEditor->setBreakComponentVisible(true);
     this->setCentralWidget(codeEditor);
 }
 

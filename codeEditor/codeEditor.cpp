@@ -5,19 +5,6 @@
 #include <QScrollBar>
 #include <QPoint>
 
-QString gloable_testText = "\n\
-//测试代码\n\
-/*true test\n\
- * code\n\
- */\n\
-int mian()\n\
-{\n\
-\tint a = 10;\n\
-\tif(a == 10 ){\n\
-\t\t\n\
-\t}\n\
-\treturn 0;\n\
-}\n";
 
 CodeEditor::CodeEditor(QWidget* parent):
     QPlainTextEdit{parent}
@@ -25,30 +12,30 @@ CodeEditor::CodeEditor(QWidget* parent):
     // 设置换行、tab显示宽度
     this->setWordWrapMode(QTextOption::NoWrap);
     this->setTabStopDistance(40);
-
+    // 字体
     QFont gloableFont("Consolas", 12);
     this->setFont(gloableFont);
     this->setCursorWidth(2);
-    editorSideArea = new EditorSideArea(this);
-    editorSideArea->setBoundingTextEdit(this);
-
+    // 小组件
+    lineNumberArea = new LineNumberArea(this);
+    lineNumberArea->setBoundingTextEdit(this);
     breakPointArea = new BreakPointArea(this);
     breakPointArea->setBoundingTextEdit(this);
 
     QRect frame = breakPointArea->frameGeometry();
     breakPointArea->resize(20, this->viewport()->height());
-    editorSideArea->move(frame.x()+20, editorSideArea->y());
-    editorSideArea->resize(editorSideArea->width(), this->viewport()->height());
+    lineNumberArea->move(frame.x()+20, lineNumberArea->y());
+    lineNumberArea->resize(lineNumberArea->width(), this->viewport()->height());
 
     // 设置语法高亮
-
     this->cHighLight = new CHighlight(this->document());
 
-    connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
-    connect(this, &CodeEditor::updateRequest, this, &CodeEditor::updateLineNumberArea);
+    //===========================信号===================================
+    connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::_on_blockCountChanged);
+    connect(this, &CodeEditor::updateRequest, this, &CodeEditor::_on_updateRequest);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &CodeEditor::_on_cursorPositionChanged);
 
-    updateLineNumberAreaWidth(0);
+    updateSideAreaWidth();
 }
 
 CodeEditor::~CodeEditor()
@@ -59,22 +46,34 @@ CodeEditor::~CodeEditor()
 
 }
 
-void CodeEditor::setBreakComponent(bool visible)
+void CodeEditor::setLineComponentVisible(bool visible)
+{
+    lineNumberArea->setVisible(visible);
+}
+
+void CodeEditor::setBreakComponentVisible(bool visible)
 {
     breakPointArea->setVisible(visible);
 }
 
-void CodeEditor::setLineHighlight(int lineNum)
+void CodeEditor::addBreak(int line)
 {
-    QList<QTextEdit::ExtraSelection> extraSelections;//提供一种方式显示选择的文本
-    extraSelections = this->extraSelections();//获取之前高亮的设置
-    QTextEdit::ExtraSelection selection;
-    QBrush bursh(QColor::fromString("#FFE573"));
-    selection.format.setBackground(bursh);
-    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
-    selection.cursor = this->textCursor();
-    extraSelections.append(selection);
-    this->setExtraSelections(extraSelections);
+    
+}
+
+void CodeEditor::removeBreak(int line)
+{
+    
+}
+
+void CodeEditor::addError(int line, int col, QString &errStr)
+{
+    
+}
+
+void CodeEditor::removeError(int line, int col)
+{
+    
 }
 
 QPoint CodeEditor::countTextPosByMousePos(QPoint &mousePos)
@@ -156,42 +155,70 @@ void CodeEditor::wheelEvent(QWheelEvent *e)
 }
 
 
-void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
+void CodeEditor::updateSideArea(const QRect &rect, int dy)
 {
     if (dy){
-        dynamic_cast<QWidget*>(editorSideArea)->scroll(0 , dy);
+        dynamic_cast<QWidget*>(lineNumberArea)->scroll(0 , dy);
         dynamic_cast<QWidget*>(breakPointArea)->scroll(0 , dy);
     }else{
-        dynamic_cast<QWidget*>(breakPointArea)->update(0, rect.y(), dynamic_cast<QWidget*>(breakPointArea)->width(), rect.height());
-        dynamic_cast<QWidget*>(editorSideArea)->update(countBreakPointWigetWidth(), rect.y(), dynamic_cast<QWidget*>(editorSideArea)->width(), rect.height());
+        dynamic_cast<QWidget*>(breakPointArea)->update(0, rect.y(), static_cast<QWidget*>(breakPointArea)->width(), rect.height());
+        dynamic_cast<QWidget*>(lineNumberArea)->update(countBreakPointWigetWidth(), rect.y(), static_cast<QWidget*>(lineNumberArea)->width(), rect.height());
     }
 
-    if (rect.contains(viewport()->rect()))
-        updateLineNumberAreaWidth(0);
+    // if (rect.contains(viewport()->rect())){
+    //     updateLineNumberAreaWidth();
+    // }
+    updateSideAreaWidth();
+
 }
 
-void CodeEditor::updateLineNumberAreaWidth(int newBlockNum)
+void CodeEditor::updateSideAreaWidth()
 {
     int lineNumNeedWidth = countLineNumberWigetWidth();
     int breakpointNeedWidth = countBreakPointWigetWidth();
     setViewportMargins(breakpointNeedWidth + lineNumNeedWidth, 0, 0, 0);
-    this->editorSideArea->resize(this->editorSideArea->sizeHint());
+    this->lineNumberArea->resize(this->lineNumberArea->sizeHint());
     this->breakPointArea->resize(this->breakPointArea->sizeHint());
 }
+
+void CodeEditor::highLightSelectedLine()
+{
+    QList<QTextEdit::ExtraSelection> extraSelections;//提供一种方式显示选择的文本
+    QTextEdit::ExtraSelection selection;
+
+    QBrush bursh(QColor::fromString("#FFE573"));
+    selection.format.setBackground(bursh);
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    selection.cursor = this->textCursor();
+    extraSelections.append(selection);
+
+    this->setExtraSelections(extraSelections);
+}
+
+
 
 void CodeEditor::_on_cursorPositionChanged()
 {
 
-    QTextCursor cursor = this->textCursor();;
+    // QTextCursor cursor = this->textCursor();;
 
-    // 清除之前的所有选择区域样式
-    QList<QTextEdit::ExtraSelection> selections;
-    selections = this->extraSelections();
-    selections.clear();
-    this->setExtraSelections(selections);
+    // // 清除之前的所有选择区域样式
+    // QList<QTextEdit::ExtraSelection> selections;
+    // this->setExtraSelections(selections);
 
-    // 设置高亮
-    setLineHighlight(0);
-    int lineNumber = cursor.blockNumber();
-    int columnNumber = cursor.columnNumber();
+    // // 设置高亮
+    // highLightSelectedLine();
+    // int lineNumber = cursor.blockNumber();
+    // int columnNumber = cursor.columnNumber();
+}
+
+void CodeEditor::_on_blockCountChanged(int newBlockCount)
+{
+    updateSideAreaWidth();
+}
+
+
+void CodeEditor::_on_updateRequest(const QRect &rect, int dy)
+{
+    updateSideArea(rect, dy);
 }

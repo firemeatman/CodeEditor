@@ -23,6 +23,8 @@ private:
     };
     QVector<HighlightingRule> highlightingRules;
     static QString keyWordPattern;
+    static QString macroPattern;
+
 
 };
 

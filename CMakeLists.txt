@@ -24,7 +24,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         codeEditor/codeEditor.h codeEditor/codeEditor.cpp
-        codeEditor/editorSideArea.h codeEditor/editorSideArea.cpp
+        codeEditor/lineNumberArea.h codeEditor/lineNumberArea.cpp
         common/forceAccess.h common/forceAccess.cpp
         codeEditor/breakPointArea.h codeEditor/breakPointArea.cpp
         codeEditor/cHighLight.h codeEditor/cHighLight.cpp

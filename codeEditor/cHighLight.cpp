@@ -3,31 +3,38 @@
 QString CHighlight::keyWordPattern = QStringLiteral("\\b(double|float|int|short|long|unsigned|signed|struct|union|void|enum|\
 return|\
 auto|extern|register|static\
-const|sizeof|typedef|volatile\
+const|sizeof|typedef|volatile|using\
 for|do|while|continue|break|if|else|goto|switch|case|default)\\b");
+QString CHighlight::macroPattern = QStringLiteral("#\\w+");
 
 CHighlight::CHighlight(QTextDocument *parent)
     : QSyntaxHighlighter{parent}
 {
-    HighlightingRule highlightRule;
+
     //关键字高亮
     HighlightingRule keys_rule;
     keys_rule.pattern.setPattern(keyWordPattern);
     keys_rule.format.setForeground(QColor(0, 0, 255));
     keys_rule.format.setFontWeight(QFont::Bold);
     highlightingRules.append(keys_rule);
-    //双引号范围高亮
-    HighlightingRule str_rule;
-    str_rule.pattern.setPattern("\".*\"");
-    str_rule.format.setForeground(QColor(200, 100, 0));
-    str_rule.format.setFontWeight(QFont::Bold);
-    highlightingRules.append(str_rule);
-
+    // 宏定义高亮
+    HighlightingRule macroRule;
+    macroRule.pattern.setPattern(macroPattern);
+    macroRule.format.setForeground(QColor(0, 0, 255));
+    macroRule.format.setFontWeight(QFont::Bold);
+    highlightingRules.append(macroRule);
+    //双引号字符串高亮
+    HighlightingRule strRule;
+    strRule.pattern.setPattern("\".*\"");
+    strRule.format.setForeground(QColor(200, 100, 0));
+    strRule.format.setFontWeight(QFont::Bold);
+    highlightingRules.append(strRule);
     // 单行注释
-    highlightRule.pattern.setPattern("//.*");
-    highlightRule.format.setForeground(QColor("#0ACF00"));
-    highlightRule.format.setFontWeight(QFont::Bold);
-    highlightingRules.append(str_rule);
+    HighlightingRule oneLineAnnotationRule;
+    oneLineAnnotationRule.pattern.setPattern("//.*");
+    oneLineAnnotationRule.format.setForeground(QColor("#0ACF00"));
+    oneLineAnnotationRule.format.setFontWeight(QFont::Bold);
+    highlightingRules.append(oneLineAnnotationRule);
 }
 
 void CHighlight::highlightBlock(const QString &text)
@@ -41,8 +48,7 @@ void CHighlight::highlightBlock(const QString &text)
         }
     }
 
-    // 跨行的复杂匹配
-
+    // 跨行的复杂匹配，匹配多行注释
     QTextCharFormat multiLineCommentFormat;
     multiLineCommentFormat.setForeground(QColor("#0ACF00"));
 

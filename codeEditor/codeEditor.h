@@ -3,7 +3,7 @@
 
 #include <QPlainTextEdit>
 #include <QWidget>
-#include "editorSideArea.h"
+#include "lineNumberArea.h"
 #include "breakPointArea.h"
 #include "cHighLight.h"
 
@@ -14,36 +14,47 @@ public:
     CodeEditor(QWidget* parent = nullptr);
     ~CodeEditor();
 
-    void setBreakComponent(bool visible = false);
+    void setLineComponentVisible(bool visible = true);
+    void setBreakComponentVisible(bool visible = false);
 
-    // 常用的函数
+    void addBreak(int line);
+    void removeBreak(int line);
+    void addError(int line, int col, QString& errStr);
+    void removeError(int line, int col);
 
-    void setLineHighlight(int lineNum);
-    /* 根据鼠标指针位置计算对应编辑器中的文本位置
-     * return: QPonit 列号、行号
-     */
-    QPoint countTextPosByMousePos(QPoint& mousePos);
+    // void setHelpInfoWindow(QPoint& pos, QWidget* window = nullptr);
+    // void removeHelpInfoWindow(QWidget* window = nullptr);
+    // void setCodeCompletionList(QPoint& pos);
+    // void removeCodeCompletionList(QPoint& pos);
 
+    // 根据鼠标指针位置计算对应编辑器中的文本位置；返回行号列号
+    QPoint countTextPosByMousePos(QPoint& mousePos); //弃用
 
+public:
     // 计算小组件需要的宽度
     int countLineNumberWigetWidth() const;
     int countBreakPointWigetWidth();
 private:
-    // int lineNum;
-    // int currentLinePos;
-    // int currentColumPos;
 
-    EditorSideArea* editorSideArea = nullptr;
+    LineNumberArea* lineNumberArea = nullptr;
     BreakPointArea* breakPointArea = nullptr;
     CHighlight* cHighLight = nullptr;
+
+    void updateSideArea(const QRect &rect, int dy);
+    void updateSideAreaWidth();
+
+    void highLightSelectedLine();
 
 protected:
     void wheelEvent(QWheelEvent *e);//滚轮事件
 
+signals:
+    void breakChanged(int line, bool haveBreakPoint);
+
 public slots:
     void _on_cursorPositionChanged();
-    void updateLineNumberArea(const QRect &rect, int dy);
-    void updateLineNumberAreaWidth(int /* newBlockCount */);
+    void _on_blockCountChanged(int newBlockCount);
+    void _on_updateRequest(const QRect &rect, int dy);
 };
 
 #endif // CODEEDITOR_H

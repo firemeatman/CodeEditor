@@ -8,14 +8,11 @@
 
 class CodeEditor;
 
-class EditorSideArea : public QWidget
+class LineNumberArea : public QWidget
 {
 
 public:
-    EditorSideArea(QWidget* parent = nullptr);
-
-
-    void lineNumberAreaPaintEvent(QPaintEvent* event);
+    LineNumberArea(QWidget* parent = nullptr);
 
     QSize sizeHint() const override;
 
@@ -26,10 +23,7 @@ private:
     CodeEditor* boundingTextEdit;
 
 protected:
-    void paintEvent(QPaintEvent *event) override
-    {
-        lineNumberAreaPaintEvent(event);
-    }
+    void paintEvent(QPaintEvent *event) override;
 };
 
 
