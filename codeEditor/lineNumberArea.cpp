@@ -56,6 +56,8 @@ void LineNumberArea::paintEvent(QPaintEvent *event)
     int wholeBottom = needUpdateRect.bottom();
     int wholeTop = needUpdateRect.top();
     QString number;
+    int selfWidth = this->width();
+    int fontHeight = fontMetrics().height();
     while (block.isValid() && top <= wholeBottom)
     {
         number = QString::number(blockNumber + 1);
@@ -63,13 +65,13 @@ void LineNumberArea::paintEvent(QPaintEvent *event)
         if (block.isVisible() && bottom >= wholeTop)
         {
             painter.setPen(Qt::black);
-            painter.drawText(0, top, this->width(), fontMetrics().height(),
+            painter.drawText(0, top, selfWidth, fontHeight,
                              Qt::AlignRight, number);
         }
 
         block = block.next();
         top = bottom;
-        bottom = top + height;
+        bottom = top + qRound(boundingTextEditForce->blockBoundingRect(block).height());
         ++blockNumber;
     }
 }

@@ -3,6 +3,7 @@
 
 #include <QPlainTextEdit>
 #include <QWidget>
+#include <QPixmap>
 #include "lineNumberArea.h"
 #include "breakPointArea.h"
 #include "cHighLight.h"
@@ -19,8 +20,12 @@ public:
 
     void addBreak(int line);
     void removeBreak(int line);
+    void addNextFlag(int line);
+    void removeNextFlag(int line);
     void addError(int line, int col, QString& errStr);
     void removeError(int line, int col);
+
+    void setBreakComponentImg(QString& resPath, PointType type);
 
     // void setHelpInfoWindow(QPoint& pos, QWidget* window = nullptr);
     // void removeHelpInfoWindow(QWidget* window = nullptr);
@@ -50,8 +55,10 @@ protected:
 
 signals:
     void breakChanged(int line, bool haveBreakPoint);
+    void lineChanged(int rangeLeft, int rangeRight, bool isAddLine);
 
 public slots:
+    void _on_contentsChange(int position, int charsRemoved, int charsAdded);
     void _on_cursorPositionChanged();
     void _on_blockCountChanged(int newBlockCount);
     void _on_updateRequest(const QRect &rect, int dy);

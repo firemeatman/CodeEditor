@@ -7,12 +7,60 @@
 BreakPointArea::BreakPointArea(QWidget *parent)
     : QWidget{parent}
 {
+
 }
 
 BreakPointArea::~BreakPointArea()
 {
-    if(breakPointImg != nullptr){
-        delete breakPointImg;
+}
+
+void BreakPointArea::updatePointLine(int changeLineStart, int changeLineEnd, bool isAddLine)
+{
+    if(changeLineStart > changeLineEnd) return;
+    int changeLineNum = changeLineEnd - changeLineStart;
+    int size = pointList.size();
+    InfoPoint point;
+    for(int i=size-1; i>=0; i--){
+        point = pointList.at(i);
+        if(point.line < changeLineStart) continue;
+        if(isAddLine){
+            pointList[i].line = point.line + changeLineNum;
+        }else{
+            if(point.line > changeLineEnd){
+                pointList[i].line = point.line - changeLineNum;
+            }else{
+                pointList.removeAt(i);
+            }
+        }
+    }
+}
+
+void BreakPointArea::addPoint(int line, PointType type)
+{
+    int index = findPoint(line);
+    if(index >= 0){
+        InfoPoint point = pointList.at(index);
+        point.setPoint(type);
+        pointList[index] = point;
+    }else{
+        InfoPoint point;
+        point.line = line;
+        point.setPoint(type);
+        pointList.append(point);
+    }
+}
+
+void BreakPointArea::removePoint(int line, PointType type)
+{
+    int index = findPoint(line);
+    if(index >= 0){
+        InfoPoint point = pointList.at(index);
+        if(point.exist(type)){
+            point.resetPoint(type);
+        }
+        if(point.isEmputy()){
+            pointList.removeAt(index);
+        }else pointList[index] = point;
     }
 }
 
@@ -69,9 +117,17 @@ void BreakPointArea::paintEvent(QPaintEvent *event)
     int bottom = top + height;
 
     painter.setBrush(Qt::red);//设置画刷
+    painter.setPen(Qt::transparent);
     painter.setRenderHint(QPainter::Antialiasing); // 抗锯齿
     int wholeBottom = needUpdateRect.bottom();
     int wholeTop = needUpdateRect.top();
+
+    int originalHeight = fontMetrics().height();
+    int newHight = originalHeight * 0.7;
+    int radius = newHight * 0.5;
+    int x = originalHeight/2 - radius;
+    int y = top + originalHeight/2 - radius;
+    QPixmap pixmap;
     // 如果块有效
     while (block.isValid() && top <= wholeBottom)
     {
@@ -79,19 +135,29 @@ void BreakPointArea::paintEvent(QPaintEvent *event)
         {
             int index = findPoint(blockNumber);
             if( index >= 0){
-                // 设置圆形的左上角坐标和高度宽度
-                int originalHeight = fontMetrics().height();
-                int newHight = originalHeight * 0.6;
-                int radius = newHight * 0.5;
-                int x = originalHeight/2 - radius;
-                int y = top + originalHeight/2 - radius;
+                InfoPoint point = pointList.at(index);
+                y = top + originalHeight/2 - radius;
+                if(point.exist(PointType::Break) || point.exist(PointType::Arrow)){
 
-                painter.drawEllipse(x, y, newHight, newHight);
+                    if(point.exist(PointType::Break)){
+                        painter.drawEllipse(x, y, newHight, newHight);
+                    }
+                    if(point.exist(PointType::Arrow)){
+                        pixmap = this->arrowImg.scaled(originalHeight,originalHeight);
+                        painter.drawPixmap(0,top,pixmap);
+                    }
+                }else if(point.exist(PointType::Warn)){
+                    // pixmap = this->warnImg.scaled(originalHeight,originalHeight);
+                    // painter.drawPixmap(0,top,pixmap);
+                }else if(point.exist(PointType::Error)){
+                    // pixmap = this->errorImg.scaled(originalHeight,originalHeight);
+                    // painter.drawPixmap(0,top,pixmap);
+                }
             }
         }
         block = block.next();
         top = bottom;
-        bottom = top + height;
+        bottom = top + qRound(boundingTextEditForce->blockBoundingRect(block).height());;
         ++blockNumber;
     }
 
@@ -109,15 +175,17 @@ void BreakPointArea::mousePressEvent(QMouseEvent *event)
         int index = findPoint(lineNum);
         if(index >=0){
             InfoPoint point = pointList.at(index);
-            point.breakPoint = false;
+            if(point.exist(PointType::Break)){
+                point.resetPoint(PointType::Break);
+            }else point.setPoint(PointType::Break);
             if(point.isEmputy()){
-                pointList.remove(index);
+                pointList.removeAt(index);
             }else pointList[index] = point;
             emit breakChanged(lineNum, false);
         }else{
             InfoPoint point;
             point.line = lineNum;
-            point.breakPoint = true;
+            point.setPoint(PointType::Break);
             pointList.append(point);
             emit breakChanged(lineNum, true);
         }

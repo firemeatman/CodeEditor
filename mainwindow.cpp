@@ -18,7 +18,17 @@ MainWindow::MainWindow(QWidget *parent)
     file.close();
     codeEditor = new CodeEditor(this);
     codeEditor->setPlainText(text);
-    codeEditor->setBreakComponentVisible(true);
+    QString arrow = "D:/c_workstation/projects/QT-projects/CodeEditor/resource/right_arrow_icon_48px.png";
+    codeEditor->setBreakComponentImg(arrow, PointType::Arrow);
+    codeEditor->addBreak(5);
+    codeEditor->addNextFlag(5);
+
+    codeEditor->addBreak(6);
+    codeEditor->addError(10,0,arrow);
+    codeEditor->addNextFlag(7);
+
+    // codeEditor->setBreakComponentVisible(false);
+    // codeEditor->setLineComponentVisible(false);
     this->setCentralWidget(codeEditor);
 }
 

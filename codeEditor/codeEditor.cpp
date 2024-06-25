@@ -21,18 +21,19 @@ CodeEditor::CodeEditor(QWidget* parent):
     lineNumberArea->setBoundingTextEdit(this);
     breakPointArea = new BreakPointArea(this);
     breakPointArea->setBoundingTextEdit(this);
-
     QRect frame = breakPointArea->frameGeometry();
     breakPointArea->resize(20, this->viewport()->height());
     lineNumberArea->move(frame.x()+20, lineNumberArea->y());
     lineNumberArea->resize(lineNumberArea->width(), this->viewport()->height());
-
     // 设置语法高亮
-    this->cHighLight = new CHighlight(this->document());
+    QTextDocument* doc = this->document();
+    this->cHighLight = new CHighlight(doc);
+
 
     //===========================信号===================================
-    connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::_on_blockCountChanged);
-    connect(this, &CodeEditor::updateRequest, this, &CodeEditor::_on_updateRequest);
+    connect(doc, &QTextDocument::contentsChange, this, &CodeEditor::_on_contentsChange);
+    connect(this, &QPlainTextEdit::blockCountChanged, this, &CodeEditor::_on_blockCountChanged);
+    connect(this, &QPlainTextEdit::updateRequest, this, &CodeEditor::_on_updateRequest);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &CodeEditor::_on_cursorPositionChanged);
 
     updateSideAreaWidth();
@@ -58,22 +59,45 @@ void CodeEditor::setBreakComponentVisible(bool visible)
 
 void CodeEditor::addBreak(int line)
 {
-    
+    if(line >= this->blockCount()) return;
+    this->breakPointArea->addPoint(line, PointType::Break);
 }
 
 void CodeEditor::removeBreak(int line)
 {
-    
+    if(line >= this->blockCount()) return;
+    this->breakPointArea->removePoint(line, PointType::Break);
+}
+
+void CodeEditor::addNextFlag(int line)
+{
+    if(line >= this->blockCount()) return;
+    this->breakPointArea->addPoint(line, PointType::Arrow);
+}
+
+void CodeEditor::removeNextFlag(int line)
+{
+    if(line >= this->blockCount()) return;
+    this->breakPointArea->removePoint(line, PointType::Arrow);
 }
 
 void CodeEditor::addError(int line, int col, QString &errStr)
 {
-    
+    if(line >= this->blockCount()) return;
+    this->breakPointArea->addPoint(line, PointType::Error);
 }
 
 void CodeEditor::removeError(int line, int col)
 {
-    
+    if(line >= this->blockCount()) return;
+    this->breakPointArea->removePoint(line, PointType::Error);
+}
+
+void CodeEditor::setBreakComponentImg(QString &resPath, PointType type)
+{
+    QPixmap map(resPath);
+    //map = map.scaled(20,20);
+    if(type == PointType::Arrow) this->breakPointArea->arrowImg = map;
 }
 
 QPoint CodeEditor::countTextPosByMousePos(QPoint &mousePos)
@@ -154,7 +178,6 @@ void CodeEditor::wheelEvent(QWheelEvent *e)
 
 }
 
-
 void CodeEditor::updateSideArea(const QRect &rect, int dy)
 {
     if (dy){
@@ -195,6 +218,38 @@ void CodeEditor::highLightSelectedLine()
     this->setExtraSelections(extraSelections);
 }
 
+void CodeEditor::_on_contentsChange(int position, int charsRemoved, int charsAdded)
+{
+    static int lastLineNum = 0;
+
+    QTextDocument* doc = this->document();
+    QTextBlock block = doc->findBlock(position);
+    int blockNum = block.blockNumber();
+    int lineNum = doc->blockCount();
+    int changeLineNum = std::abs(lineNum - lastLineNum);
+    int rangeLeft = blockNum;
+    int rangeRight;
+    bool isAdd = false;
+
+    // 行数没变化时跳出
+    if(changeLineNum == 0){
+        return;
+    }
+    if(charsRemoved > 0 && charsAdded > 0){ // 采用字符位移计算改变的行范围
+        int endPos = position + charsAdded;
+        rangeRight = doc->findBlock(endPos).blockNumber();
+        if(charsAdded >= charsRemoved) isAdd = true;
+
+    }else{ // 采用行数变化计算改变的行范围
+        rangeRight = rangeLeft + changeLineNum;
+        if(lineNum >= lastLineNum) isAdd = true;
+    }
+    // qDebug()<<position<<"; "<<charsRemoved<<"; "<<charsAdded;
+    // qDebug("rangeLeft: %d;rangeRight: %d",rangeLeft,rangeRight);
+    lastLineNum = lineNum;
+    emit lineChanged(rangeLeft, rangeRight, isAdd);
+    this->breakPointArea->updatePointLine(rangeLeft, rangeRight, isAdd);
+}
 
 
 void CodeEditor::_on_cursorPositionChanged()
