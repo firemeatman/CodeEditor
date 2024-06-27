@@ -13,7 +13,8 @@ LineNumberArea::LineNumberArea(QWidget *parent)
 
 QSize LineNumberArea::sizeHint() const
 {
-    int height = boundingTextEdit->viewport()->height();
+    //int height = boundingTextEdit->viewport()->height();
+    int height = boundingTextEdit->height();
     return QSize(boundingTextEdit->countLineNumberWigetWidth(), height);
     //return QSize(((ForceAccess::ForceQPlainText*)boundingTextEdit)->viewportMargins().left(), 0);
 }

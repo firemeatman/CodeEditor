@@ -16,15 +16,24 @@ CodeEditor::CodeEditor(QWidget* parent):
     QFont gloableFont("Consolas", 12);
     this->setFont(gloableFont);
     this->setCursorWidth(2);
-    // 小组件
+    // 样式
+    QBrush brush(Qt::red);
+    errorLineFormat.setBackground(brush);
+    //errorLineFormat.setProperty(QTextFormat::FullWidthSelection, true);
+
+    errorUnderLineFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+    errorUnderLineFormat.setUnderlineColor(Qt::red);
+    errorUnderLineFormat.setFontUnderline(true);
+    // 小组件a
     lineNumberArea = new LineNumberArea(this);
     lineNumberArea->setBoundingTextEdit(this);
     breakPointArea = new BreakPointArea(this);
     breakPointArea->setBoundingTextEdit(this);
-    QRect frame = breakPointArea->frameGeometry();
-    breakPointArea->resize(20, this->viewport()->height());
-    lineNumberArea->move(frame.x()+20, lineNumberArea->y());
-    lineNumberArea->resize(lineNumberArea->width(), this->viewport()->height());
+
+    // QRect frame = breakPointArea->frameGeometry();
+    // breakPointArea->resize(20, this->viewport()->height());
+    // lineNumberArea->move(frame.x()+20, lineNumberArea->y());
+    // lineNumberArea->resize(lineNumberArea->width(), this->viewport()->height());
     // 设置语法高亮
     QTextDocument* doc = this->document();
     this->cHighLight = new CHighlight(doc);
@@ -36,7 +45,7 @@ CodeEditor::CodeEditor(QWidget* parent):
     connect(this, &QPlainTextEdit::updateRequest, this, &CodeEditor::_on_updateRequest);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &CodeEditor::_on_cursorPositionChanged);
 
-    updateSideAreaWidth();
+    updateSideArea();
 }
 
 CodeEditor::~CodeEditor()
@@ -81,10 +90,25 @@ void CodeEditor::removeNextFlag(int line)
     this->breakPointArea->removePoint(line, PointType::Arrow);
 }
 
+void CodeEditor::addWarn(int line, int col, QString &warnStr)
+{
+    if(line >= this->blockCount()) return;
+    this->breakPointArea->addPoint(line, PointType::Warn);
+}
+
+void CodeEditor::removeWarn(int line, int col)
+{
+    if(line >= this->blockCount()) return;
+    this->breakPointArea->removePoint(line, PointType::Warn);
+}
+
 void CodeEditor::addError(int line, int col, QString &errStr)
 {
     if(line >= this->blockCount()) return;
     this->breakPointArea->addPoint(line, PointType::Error);
+
+    QTextCursor cursor = this->generateCursor(line, col);
+    addWordUnderline(cursor, this->errorUnderLineFormat);
 }
 
 void CodeEditor::removeError(int line, int col)
@@ -97,7 +121,19 @@ void CodeEditor::setBreakComponentImg(QString &resPath, PointType type)
 {
     QPixmap map(resPath);
     //map = map.scaled(20,20);
-    if(type == PointType::Arrow) this->breakPointArea->arrowImg = map;
+    switch (type) {
+    case PointType::Arrow:
+        this->breakPointArea->arrowImg = map;
+        break;
+    case PointType::Warn:
+        this->breakPointArea->warnImg = map;
+        break;
+    case PointType::Error:
+        this->breakPointArea->errorImg = map;
+        break;
+    default:
+        break;
+    }
 }
 
 QPoint CodeEditor::countTextPosByMousePos(QPoint &mousePos)
@@ -150,6 +186,7 @@ int CodeEditor::countBreakPointWigetWidth()
 
 void CodeEditor::wheelEvent(QWheelEvent *e)
 {
+    // 放大缩小字体
     QPoint numDegrees = e->angleDelta() / 8;
     Qt::KeyboardModifiers keyModifiers = QApplication::keyboardModifiers();
 
@@ -178,30 +215,46 @@ void CodeEditor::wheelEvent(QWheelEvent *e)
 
 }
 
-void CodeEditor::updateSideArea(const QRect &rect, int dy)
+void CodeEditor::resizeEvent(QResizeEvent *event)
 {
-    if (dy){
-        dynamic_cast<QWidget*>(lineNumberArea)->scroll(0 , dy);
-        dynamic_cast<QWidget*>(breakPointArea)->scroll(0 , dy);
-    }else{
-        dynamic_cast<QWidget*>(breakPointArea)->update(0, rect.y(), static_cast<QWidget*>(breakPointArea)->width(), rect.height());
-        dynamic_cast<QWidget*>(lineNumberArea)->update(countBreakPointWigetWidth(), rect.y(), static_cast<QWidget*>(lineNumberArea)->width(), rect.height());
-    }
+    // 更新小组件高度
+    int height =  event->size().height();
+    this->lineNumberArea->resize(lineNumberArea->width(), height);
+    this->breakPointArea->resize(breakPointArea->width(), height);
 
-    // if (rect.contains(viewport()->rect())){
-    //     updateLineNumberAreaWidth();
-    // }
-    updateSideAreaWidth();
-
+    this->lineNumberArea->update();
+    this->breakPointArea->update();
 }
 
-void CodeEditor::updateSideAreaWidth()
+
+void CodeEditor::updateSideArea()
 {
     int lineNumNeedWidth = countLineNumberWigetWidth();
     int breakpointNeedWidth = countBreakPointWigetWidth();
+    int height = this->height();
     setViewportMargins(breakpointNeedWidth + lineNumNeedWidth, 0, 0, 0);
-    this->lineNumberArea->resize(this->lineNumberArea->sizeHint());
-    this->breakPointArea->resize(this->breakPointArea->sizeHint());
+
+    QRect frame = breakPointArea->frameGeometry();
+    lineNumberArea->move(frame.x()+breakpointNeedWidth, lineNumberArea->y());
+    this->lineNumberArea->resize(lineNumNeedWidth, height);
+    this->breakPointArea->resize(breakpointNeedWidth, height);
+
+    this->lineNumberArea->update();
+    this->breakPointArea->update();
+
+}
+
+QTextCursor CodeEditor::generateCursor(int line, int col)
+{
+    QTextDocument* doc = this->document();
+    QTextBlock block = doc->findBlockByNumber(line);
+    QTextCursor cursor(block);
+
+    int endPos = block.position() + col;
+    cursor.setPosition(endPos,QTextCursor::MoveMode::MoveAnchor);
+    //cursor.movePosition(QTextCursor::MoveOperation::Right, QTextCursor::MoveMode::MoveAnchor,col);
+
+    return cursor;
 }
 
 void CodeEditor::highLightSelectedLine()
@@ -215,6 +268,50 @@ void CodeEditor::highLightSelectedLine()
     selection.cursor = this->textCursor();
     extraSelections.append(selection);
 
+    this->setExtraSelections(extraSelections);
+}
+
+void CodeEditor::highlightLine(int line, QTextCharFormat& format)
+{
+    QList<QTextEdit::ExtraSelection> extraSelections = this->extraSelections();//提供一种方式显示选择的文本
+    QTextEdit::ExtraSelection selection;
+
+    QTextDocument* doc = this->document();
+    QTextBlock block = doc->findBlockByNumber(line);
+    QTextCursor cursor(block);
+    //cursor.movePosition(QTextCursor::EndOfLine);
+    //cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::MoveMode::KeepAnchor);
+
+    selection.format = format;
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    selection.cursor = cursor;
+    extraSelections.append(selection);
+
+    this->setExtraSelections(extraSelections);
+}
+
+void CodeEditor::addWordUnderline(int line, int col, QTextCharFormat& format)
+{
+    QTextCursor cursor = this->generateCursor(line, col);
+    cursor.select(QTextCursor::WordUnderCursor);
+
+    QList<QTextEdit::ExtraSelection> extraSelections = this->extraSelections();
+    QTextEdit::ExtraSelection selection;
+    selection.format = format;
+    selection.cursor = cursor;
+    extraSelections.append(selection);
+    this->setExtraSelections(extraSelections);
+}
+
+void CodeEditor::addWordUnderline(QTextCursor &cursor, QTextCharFormat &format)
+{
+    cursor.select(QTextCursor::WordUnderCursor);
+
+    QList<QTextEdit::ExtraSelection> extraSelections = this->extraSelections();
+    QTextEdit::ExtraSelection selection;
+    selection.format = format;
+    selection.cursor = cursor;
+    extraSelections.append(selection);
     this->setExtraSelections(extraSelections);
 }
 
@@ -269,11 +366,22 @@ void CodeEditor::_on_cursorPositionChanged()
 
 void CodeEditor::_on_blockCountChanged(int newBlockCount)
 {
-    updateSideAreaWidth();
+    updateSideArea();
+
 }
 
 
 void CodeEditor::_on_updateRequest(const QRect &rect, int dy)
 {
-    updateSideArea(rect, dy);
+    if (dy){
+        lineNumberArea->scroll(0 , dy);
+        breakPointArea->scroll(0 , dy);
+    }else{
+        breakPointArea->update(0, rect.y(),breakPointArea->width(), rect.height());
+        lineNumberArea->update(countBreakPointWigetWidth(), rect.y(), lineNumberArea->width(), rect.height());
+    }
+
+    if (rect.contains(viewport()->rect())){
+        updateSideArea();
+    }
 }

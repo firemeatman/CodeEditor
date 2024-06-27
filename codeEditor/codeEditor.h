@@ -11,21 +11,24 @@
 class CodeEditor : public QPlainTextEdit
 {
     Q_OBJECT
+
 public:
     CodeEditor(QWidget* parent = nullptr);
     ~CodeEditor();
 
     void setLineComponentVisible(bool visible = true);
     void setBreakComponentVisible(bool visible = false);
+    void setBreakComponentImg(QString& resPath, PointType type);
 
     void addBreak(int line);
     void removeBreak(int line);
     void addNextFlag(int line);
     void removeNextFlag(int line);
+    void addWarn(int line, int col, QString& warnStr);
+    void removeWarn(int line, int col);
     void addError(int line, int col, QString& errStr);
     void removeError(int line, int col);
 
-    void setBreakComponentImg(QString& resPath, PointType type);
 
     // void setHelpInfoWindow(QPoint& pos, QWidget* window = nullptr);
     // void removeHelpInfoWindow(QWidget* window = nullptr);
@@ -45,13 +48,23 @@ private:
     BreakPointArea* breakPointArea = nullptr;
     CHighlight* cHighLight = nullptr;
 
-    void updateSideArea(const QRect &rect, int dy);
-    void updateSideAreaWidth();
+    QTextCharFormat errorLineFormat;
+    QTextCharFormat errorUnderLineFormat;
 
+    // 更新小组件
+    void updateSideArea();
+    // 根据行列生成光标对象
+    QTextCursor generateCursor(int line, int col);
+    // 高亮行
     void highLightSelectedLine();
+    void highlightLine(int line, QTextCharFormat& format);
+    // 给单词添加下划线
+    void addWordUnderline(int line, int col, QTextCharFormat& format);
+    void addWordUnderline(QTextCursor &cursor, QTextCharFormat& format);
 
 protected:
-    void wheelEvent(QWheelEvent *e);//滚轮事件
+    void wheelEvent(QWheelEvent *e);
+    void resizeEvent(QResizeEvent *event);
 
 signals:
     void breakChanged(int line, bool haveBreakPoint);

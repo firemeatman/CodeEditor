@@ -6,17 +6,18 @@ auto|extern|register|static\
 const|sizeof|typedef|volatile|using\
 for|do|while|continue|break|if|else|goto|switch|case|default)\\b");
 QString CHighlight::macroPattern = QStringLiteral("#\\w+");
+QString CHighlight::varPattern = QStringLiteral("^([a-zA-Z])[_a-zA-Z0-9]*\\b");
 
 CHighlight::CHighlight(QTextDocument *parent)
     : QSyntaxHighlighter{parent}
 {
 
-    //关键字高亮
-    HighlightingRule keys_rule;
-    keys_rule.pattern.setPattern(keyWordPattern);
-    keys_rule.format.setForeground(QColor(0, 0, 255));
-    keys_rule.format.setFontWeight(QFont::Bold);
-    highlightingRules.append(keys_rule);
+    // 变量名
+    HighlightingRule keyRule;
+    keyRule.pattern.setPattern(keyWordPattern);
+    keyRule.format.setForeground(QColor(0, 0, 255));
+    keyRule.format.setFontWeight(QFont::Bold);
+    highlightingRules.append(keyRule);
     // 宏定义高亮
     HighlightingRule macroRule;
     macroRule.pattern.setPattern(macroPattern);
@@ -35,15 +36,24 @@ CHighlight::CHighlight(QTextDocument *parent)
     oneLineAnnotationRule.format.setForeground(QColor("#0ACF00"));
     oneLineAnnotationRule.format.setFontWeight(QFont::Bold);
     highlightingRules.append(oneLineAnnotationRule);
+    //关键字高亮
+    HighlightingRule varRule;
+    varRule.pattern.setPattern(varPattern);
+    varRule.format.setForeground(QColor(100, 50, 205));
+    varRule.format.setFontWeight(QFont::Bold);
+    highlightingRules.append(varRule);
+
 }
 
 void CHighlight::highlightBlock(const QString &text)
 {
     //QRegularExpression
+    QRegularExpressionMatchIterator matchIterator;
+    QRegularExpressionMatch match;
     for (const HighlightingRule &rule : qAsConst(highlightingRules)) {
-        QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
+        matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
-            QRegularExpressionMatch match = matchIterator.next();
+            match = matchIterator.next();
             setFormat(match.capturedStart(), match.capturedLength(), rule.format);
         }
     }

@@ -22,8 +22,10 @@ private:
         QTextCharFormat format;
     };
     QVector<HighlightingRule> highlightingRules;
+
     static QString keyWordPattern;
     static QString macroPattern;
+    static QString varPattern;
 
 
 };

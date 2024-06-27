@@ -66,7 +66,8 @@ void BreakPointArea::removePoint(int line, PointType type)
 
 QSize BreakPointArea::sizeHint() const
 {
-    int height = boundingTextEdit->viewport()->height();
+    //int height = boundingTextEdit->viewport()->height();
+    int height = boundingTextEdit->height();
     return QSize(boundingTextEdit->countBreakPointWigetWidth(), height);
 }
 
@@ -147,11 +148,11 @@ void BreakPointArea::paintEvent(QPaintEvent *event)
                         painter.drawPixmap(0,top,pixmap);
                     }
                 }else if(point.exist(PointType::Warn)){
-                    // pixmap = this->warnImg.scaled(originalHeight,originalHeight);
-                    // painter.drawPixmap(0,top,pixmap);
+                    pixmap = this->warnImg.scaled(originalHeight,originalHeight);
+                    painter.drawPixmap(0,top,pixmap);
                 }else if(point.exist(PointType::Error)){
-                    // pixmap = this->errorImg.scaled(originalHeight,originalHeight);
-                    // painter.drawPixmap(0,top,pixmap);
+                    pixmap = this->errorImg.scaled(originalHeight,originalHeight);
+                    painter.drawPixmap(0,top,pixmap);
                 }
             }
         }
