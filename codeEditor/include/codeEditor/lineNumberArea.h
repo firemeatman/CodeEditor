@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QTextBlock>
 #include <QPlainTextEdit>
+namespace codeEditor {
 
 class CodeEditor;
 
@@ -26,5 +27,6 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 };
 
+}
 
 #endif // EDITORSIDEAREA_H

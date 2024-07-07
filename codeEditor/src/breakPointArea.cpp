@@ -1,8 +1,9 @@
-#include "breakPointArea.h"
+#include <codeEditor/breakPointArea.h>
 
 #include <QPainter>
-#include "../common/forceAccess.h"
-#include "codeEditor.h"
+#include <codeEditor/common/forceAccess.h>
+#include <codeEditor/codeEditor.h>
+namespace codeEditor {
 
 BreakPointArea::BreakPointArea(QWidget *parent)
     : QWidget{parent}
@@ -192,4 +193,6 @@ void BreakPointArea::mousePressEvent(QMouseEvent *event)
         }
         this->update();
     }
+}
+
 }

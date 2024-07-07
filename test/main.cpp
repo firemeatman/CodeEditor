@@ -1,11 +1,16 @@
 #include "mainwindow.h"
 
 #include <QApplication>
+// namespace codeEditorTest {
+
+
+
+// }
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
+    codeEditorTest::MainWindow w;
     w.show();
     return a.exec();
 }

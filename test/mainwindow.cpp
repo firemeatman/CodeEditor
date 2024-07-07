@@ -2,13 +2,14 @@
 #include "./ui_mainwindow.h"
 
 #include <QFile>
-#include "codeEditor/codeEditor.h"
+namespace codeEditorTest {
+using namespace codeEditor;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    // , ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+    // ui->setupUi(this);
     QFile file("D:/c_workstation/projects/QT-projects/CodeEditor/resource/testcode.txt");
     QString text;
     if(file.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text)){
@@ -35,9 +36,12 @@ MainWindow::MainWindow(QWidget *parent)
     // codeEditor->setBreakComponentVisible(false);
     // codeEditor->setLineComponentVisible(false);
     this->setCentralWidget(codeEditor);
+    this->resize(1000,600);
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+    // delete ui;
+}
+
 }

@@ -1,11 +1,12 @@
-
 #ifndef FORCEACCESS_H
 #define FORCEACCESS_H
-
 
 #include <QPlainTextEdit>
 #include <QTextBlock>
 #include <QMargins>
+
+namespace codeEditor {
+
 class ForceAccess
 {
 public:
@@ -36,7 +37,6 @@ public:
 
 };
 
-
-
+}
 
 #endif // FORCEACCESS_H

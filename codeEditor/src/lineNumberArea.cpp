@@ -1,8 +1,9 @@
-#include "lineNumberArea.h"
+#include <codeEditor/lineNumberArea.h>
 
 #include <QPainter>
-#include "../common/forceAccess.h"
-#include "codeEditor.h"
+#include <codeEditor/common/forceAccess.h>
+#include <codeEditor/codeEditor.h>
+namespace codeEditor {
 
 LineNumberArea::LineNumberArea(QWidget *parent)
     : QWidget{parent}
@@ -77,6 +78,4 @@ void LineNumberArea::paintEvent(QPaintEvent *event)
     }
 }
 
-
-
-
+}

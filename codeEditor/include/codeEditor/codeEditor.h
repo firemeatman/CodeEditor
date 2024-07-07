@@ -4,9 +4,10 @@
 #include <QPlainTextEdit>
 #include <QWidget>
 #include <QPixmap>
-#include "lineNumberArea.h"
-#include "breakPointArea.h"
-#include "cHighLight.h"
+#include <codeEditor/lineNumberArea.h>
+#include <codeEditor/breakPointArea.h>
+#include <codeEditor/cHighLight.h>
+namespace codeEditor {
 
 class CodeEditor : public QPlainTextEdit
 {
@@ -76,5 +77,8 @@ public slots:
     void _on_blockCountChanged(int newBlockCount);
     void _on_updateRequest(const QRect &rect, int dy);
 };
+
+}
+
 
 #endif // CODEEDITOR_H

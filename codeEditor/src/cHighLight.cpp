@@ -1,4 +1,6 @@
-#include "cHighLight.h"
+#include <codeEditor/cHighLight.h>
+
+namespace codeEditor {
 
 QString CHighlight::keyWordPattern = QStringLiteral("\\b(double|float|int|short|long|unsigned|signed|struct|union|void|enum|\
 return|\
@@ -87,5 +89,7 @@ void CHighlight::highlightBlock(const QString &text)
                                   startIndex + commentLength);
     }
 
+
+}
 
 }

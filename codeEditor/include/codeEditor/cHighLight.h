@@ -5,6 +5,7 @@
 #include <QSyntaxHighlighter>
 #include <QTextDocument>
 #include <QRegularExpression>
+namespace codeEditor {
 
 class CHighlight : public QSyntaxHighlighter
 {
@@ -29,5 +30,8 @@ private:
 
 
 };
+
+}
+
 
 #endif // CHIGHLIGHT_H

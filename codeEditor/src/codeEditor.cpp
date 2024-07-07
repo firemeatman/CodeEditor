@@ -1,10 +1,11 @@
-#include "codeEditor.h"
+#include <codeEditor/codeEditor.h>
 
 #include <QApplication>
 #include <QDebug>
 #include <QScrollBar>
 #include <QPoint>
 
+namespace codeEditor {
 
 CodeEditor::CodeEditor(QWidget* parent):
     QPlainTextEdit{parent}
@@ -384,4 +385,6 @@ void CodeEditor::_on_updateRequest(const QRect &rect, int dy)
     if (rect.contains(viewport()->rect())){
         updateSideArea();
     }
+}
+
 }

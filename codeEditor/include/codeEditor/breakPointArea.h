@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QList>
+namespace codeEditor {
+
 class CodeEditor;
 
 enum class PointType : uint8_t{
@@ -64,5 +66,9 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
 };
+
+}
+
+
 
 #endif // BREAKPOINTAREA_H
