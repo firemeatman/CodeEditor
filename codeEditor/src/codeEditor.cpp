@@ -137,34 +137,64 @@ void CodeEditor::setBreakComponentImg(QString &resPath, PointType type)
     }
 }
 
-QPoint CodeEditor::countTextPosByMousePos(QPoint &mousePos)
+void CodeEditor::setTokenFormat(int tokenType, QTextCharFormat format)
 {
-    QPoint textPoint;
-    int lineNum;
-    int columNum;
-    QTextBlock firstBlock =this->firstVisibleBlock();  // 当前页面, 第一块可见的文本区域
-    int blockHeight = qRound(this->blockBoundingRect(firstBlock).height());
-    int top = qRound((this->blockBoundingGeometry(firstBlock)).translated(this->contentOffset()).top());
-    QTextDocument* document = this->document();
+    this->tokenFormatMap.insert(tokenType, format);
+}
 
-
-    if(blockHeight == 0){
-        lineNum = 0;
-    }else{
-        lineNum =  (mousePos.y() - top) / blockHeight;
-    }
-
-    QTextBlock block = document->findBlockByLineNumber(lineNum);
-    QTextCharFormat charFormat = block.charFormat();
-    QFont font =  charFormat.font();
-    int weidth = font.pixelSize();
-    columNum = (mousePos.x() - 4) / weidth;
-
-    textPoint.setX(columNum);
-    textPoint.setY(lineNum);
-    return textPoint;
+void CodeEditor::setWordJumpLink(bool enable, Qt::KeyboardModifiers triggerBtn)
+{
 
 }
+
+void CodeEditor::addHoverInfoWindow(int line, int col, QString &content)
+{
+
+}
+
+void CodeEditor::updateHighLight(const QList<Token> &tokenList)
+{
+
+}
+
+void CodeEditor::updateHighLight(const QList<int> &lspTokenList)
+{
+
+}
+
+void CodeEditor::addCodeCompletionSuggestions(Loaction pos, const QList<CodeSuggest> &suggestions)
+{
+
+}
+
+void CodeEditor::addDiagnosis(const QList<DiagnosisInfo> &infoList)
+{
+
+}
+
+void CodeEditor::clearDiagnosis()
+{
+
+}
+
+QTextCursor CodeEditor::cursorPosByGlobalMousePos(QPoint g_mousePos)
+{
+    QWidget* viewPort = this->viewport();
+    QPoint posInViewPort = viewPort->mapFromGlobal(g_mousePos);
+    qDebug()<<"函数全局: "<<g_mousePos;
+    qDebug()<<"在视口处的: "<<posInViewPort;
+
+    return cursorForPosition(posInViewPort);
+}
+
+QTextCursor CodeEditor::cursorPosByMousePos(QPoint mousePos, QWidget *from)
+{
+    QWidget* viewPort = this->viewport();
+    QPoint posInViewPort = viewPort->mapFrom(from, mousePos);
+
+    return cursorForPosition(posInViewPort);
+}
+
 int CodeEditor::countLineNumberWigetWidth() const
 {
     int digits = 1;
@@ -178,11 +208,16 @@ int CodeEditor::countLineNumberWigetWidth() const
     return space;
 }
 
-int CodeEditor::countBreakPointWigetWidth()
+int CodeEditor::countBreakPointWigetWidth() const
 {
     //int breakpointNeedWidth = fontMetrics().height() + 5;
     int breakpointNeedWidth = 20;
     return breakpointNeedWidth;
+}
+
+int CodeEditor::getLeftComWidth() const
+{
+    return countLineNumberWigetWidth() + countBreakPointWigetWidth();
 }
 
 void CodeEditor::wheelEvent(QWheelEvent *e)

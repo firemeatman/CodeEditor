@@ -168,13 +168,13 @@ void BreakPointArea::paintEvent(QPaintEvent *event)
 void BreakPointArea::mousePressEvent(QMouseEvent *event)
 {
     if(event->button() == Qt::LeftButton){
-        ForceAccess::ForceQPlainText* boundingTextEditForce = (ForceAccess::ForceQPlainText*)boundingTextEdit;
-
-        QTextBlock block = boundingTextEditForce->firstVisibleBlock();
-        int firstNumber = block.blockNumber();
-        QPoint pos = event->pos();
-        int lineNum = firstNumber + pos.y()/(this->lineHight);
+        QPointF g_pos = event->globalPosition();
+        int leftComWidth = boundingTextEdit->getLeftComWidth();
+        g_pos.setX(g_pos.x() + leftComWidth);
+        QTextCursor cursor = boundingTextEdit->cursorPosByGlobalMousePos(g_pos.toPoint());
+        int lineNum = cursor.blockNumber();
         int index = findPoint(lineNum);
+
         if(index >=0){
             InfoPoint point = pointList.at(index);
             if(point.exist(PointType::Break)){
