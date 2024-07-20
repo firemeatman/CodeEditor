@@ -1,10 +1,12 @@
 #include "lspqthandler.h"
 #include "lspevent.h"
 
-LspQtHandler *LspQtHandler::instance()
+namespace codeEditorTest {
+
+LspQtHandler* LspQtHandler::instance()
 {
-    static LspQtHandler* object = new LspQtHandler();
-    return object;
+    static std::shared_ptr<LspQtHandler> object = std::make_shared<LspQtHandler>();
+    return object.get();
 }
 
 LspQtHandler::LspQtHandler(QObject *parent)
@@ -31,3 +33,7 @@ void LspQtHandler::customEvent(QEvent *e)
     }
     e->accept();
 }
+
+}
+
+

@@ -4,6 +4,7 @@
 #include <QEvent>
 #include <QString>
 #include <lsp/protocol.h>
+namespace codeEditorTest {
 
 const static QEvent::Type qEventRecvMsg = (QEvent::Type)(QEvent::User + 1);
 
@@ -17,5 +18,8 @@ public:
     json jObject;
     std::string method;
 };
+
+}
+
 
 #endif // LSPEVENT_H

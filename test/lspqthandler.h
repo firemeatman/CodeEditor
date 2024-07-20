@@ -2,6 +2,9 @@
 #define LSPQTHANDLER_H
 
 #include <QObject>
+#include <memory>
+
+namespace codeEditorTest {
 
 class LspQtHandler : public QObject
 {
@@ -16,5 +19,9 @@ protected:
 signals:
     void hoverFinished(QString& content);
 };
+
+}
+
+
 
 #endif // LSPQTHANDLER_H
