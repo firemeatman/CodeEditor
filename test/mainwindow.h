@@ -2,16 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QListWidget>
+#include <QMap>
+#include <QTabWidget>
 #include <codeEditor/codeEditor.h>
+#include <lsp/client.h>
 namespace codeEditorTest {
 
 // class CodeEditor;
-
-QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
-}
-QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
@@ -22,8 +20,16 @@ public:
     ~MainWindow();
 
 private:
-    //Ui::MainWindow *ui;
-    codeEditor::CodeEditor* codeEditor = nullptr;
+    //codeEditor::CodeEditor* codeEditor{nullptr};
+    QTabWidget* tabWidget{nullptr};
+    QMap<QString,codeEditor::CodeEditor*> codeEditorMap;
+    QListWidget* fileListWidget{nullptr};
+public slots:
+    void _on_hoverCursorTriggered(int line, int col, QPoint mouse_pos);
+    void _on_ListCurrentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
+    void _on_tabCloseRequested(int index);
+    void _on_tabCurrentChanged(int index);
+    void _on_HoverRecved(QString& str);
 };
 
 }

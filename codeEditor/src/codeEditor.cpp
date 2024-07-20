@@ -10,9 +10,11 @@ namespace codeEditor {
 CodeEditor::CodeEditor(QWidget* parent):
     QPlainTextEdit{parent}
 {
-    // 设置换行、tab显示宽度
+
+    // 设置换行、tab显示宽度...
     this->setWordWrapMode(QTextOption::NoWrap);
     this->setTabStopDistance(40);
+    this->setMouseTracking(true);
     // 字体
     QFont gloableFont("Consolas", 12);
     this->setFont(gloableFont);
@@ -25,7 +27,7 @@ CodeEditor::CodeEditor(QWidget* parent):
     errorUnderLineFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     errorUnderLineFormat.setUnderlineColor(Qt::red);
     errorUnderLineFormat.setFontUnderline(true);
-    // 小组件a
+    // 小组件
     lineNumberArea = new LineNumberArea(this);
     lineNumberArea->setBoundingTextEdit(this);
     breakPointArea = new BreakPointArea(this);
@@ -39,12 +41,16 @@ CodeEditor::CodeEditor(QWidget* parent):
     QTextDocument* doc = this->document();
     this->cHighLight = new CHighlight(doc);
 
+    // 其他初始化
+    hoverTimer = new QTimer(this);
+    hoverTimer->setInterval(800);
 
     //===========================信号===================================
     connect(doc, &QTextDocument::contentsChange, this, &CodeEditor::_on_contentsChange);
     connect(this, &QPlainTextEdit::blockCountChanged, this, &CodeEditor::_on_blockCountChanged);
     connect(this, &QPlainTextEdit::updateRequest, this, &CodeEditor::_on_updateRequest);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &CodeEditor::_on_cursorPositionChanged);
+    connect(hoverTimer, &QTimer::timeout, this, &CodeEditor::_on_hoverTimeout);
 
     updateSideArea();
 }
@@ -54,6 +60,7 @@ CodeEditor::~CodeEditor()
     if(cHighLight != nullptr){
         cHighLight->deleteLater();
     }
+    hoverInfoWidget->deleteLater();
 
 }
 
@@ -147,8 +154,35 @@ void CodeEditor::setWordJumpLink(bool enable, Qt::KeyboardModifiers triggerBtn)
 
 }
 
-void CodeEditor::addHoverInfoWindow(int line, int col, QString &content)
+void CodeEditor::addHoverInfoWindow(const QString& content, Loaction curosrPos)
 {
+    if(hoverInfoWidget == nullptr){
+        hoverInfoWidget = new QTextEdit(this);
+        hoverInfoWidget->setLineWrapMode(QTextEdit::LineWrapMode::NoWrap);
+        hoverInfoWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        hoverInfoWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        hoverInfoWidget->setReadOnly(true);
+    }   
+    hoverInfoWidget->show();
+    hoverInfoWidget->setText(content);
+    // 设置大小
+    hoverInfoWidget->document()->adjustSize();
+    QSizeF docSize = hoverInfoWidget->document()->size();
+    int height;
+    int width;
+    // int height = hoverInfoWidget->verticalScrollBar()->maximum() - hoverInfoWidget->verticalScrollBar()->minimum() + hoverInfoWidget->verticalScrollBar()->pageStep();
+    // int width = hoverInfoWidget->horizontalScrollBar()->maximum() - hoverInfoWidget->horizontalScrollBar()->minimum() + hoverInfoWidget->horizontalScrollBar()->pageStep();
+    width = docSize.width() + hoverInfoWidget->verticalScrollBar()->width();
+    height = docSize.height() + hoverInfoWidget->horizontalScrollBar()->height();
+    hoverInfoWidget->resize(width, height);
+    // 设置位置
+    hoverInfoWidget->raise();
+    QPoint pos = this->hoverPos;
+    if(pos.x() + hoverInfoWidget->width() > this->width()){
+        int x_new = qMax(0, pos.x() - hoverInfoWidget->width());
+        pos.setX(x_new);
+    }
+    hoverInfoWidget->move(pos);
 
 }
 
@@ -159,11 +193,12 @@ void CodeEditor::updateHighLight(const QList<Token> &tokenList)
 
 void CodeEditor::updateHighLight(const QList<int> &lspTokenList)
 {
-
 }
 
 void CodeEditor::addCodeCompletionSuggestions(Loaction pos, const QList<CodeSuggest> &suggestions)
 {
+    QTextCursor cursor = generateCursor(pos.line, pos.col);
+
 
 }
 
@@ -181,9 +216,6 @@ QTextCursor CodeEditor::cursorPosByGlobalMousePos(QPoint g_mousePos)
 {
     QWidget* viewPort = this->viewport();
     QPoint posInViewPort = viewPort->mapFromGlobal(g_mousePos);
-    qDebug()<<"函数全局: "<<g_mousePos;
-    qDebug()<<"在视口处的: "<<posInViewPort;
-
     return cursorForPosition(posInViewPort);
 }
 
@@ -248,7 +280,32 @@ void CodeEditor::wheelEvent(QWheelEvent *e)
     default:
         break;
     }
+    QPlainTextEdit::wheelEvent(e);
 
+}
+
+void CodeEditor::mouseMoveEvent(QMouseEvent *e)
+{
+    this->hoverPos = e->pos();
+    this->hoverGpos = e->globalPosition().toPoint();
+    hoverTimer->start();
+
+    QPlainTextEdit::mouseMoveEvent(e);
+}
+
+void CodeEditor::mousePressEvent(QMouseEvent *e)
+{
+    Qt::MouseButton btn = e->button();
+    // 按下时去除信息窗
+    if (btn == Qt::LeftButton || btn == Qt::RightButton)
+    {
+        if(hoverInfoWidget){
+            hoverInfoWidget->clear();
+            hoverInfoWidget->hide();
+        }
+
+    }
+    QPlainTextEdit::mousePressEvent(e);
 }
 
 void CodeEditor::resizeEvent(QResizeEvent *event)
@@ -260,6 +317,8 @@ void CodeEditor::resizeEvent(QResizeEvent *event)
 
     this->lineNumberArea->update();
     this->breakPointArea->update();
+
+    QPlainTextEdit::resizeEvent(event);
 }
 
 
@@ -388,16 +447,7 @@ void CodeEditor::_on_contentsChange(int position, int charsRemoved, int charsAdd
 void CodeEditor::_on_cursorPositionChanged()
 {
 
-    // QTextCursor cursor = this->textCursor();;
 
-    // // 清除之前的所有选择区域样式
-    // QList<QTextEdit::ExtraSelection> selections;
-    // this->setExtraSelections(selections);
-
-    // // 设置高亮
-    // highLightSelectedLine();
-    // int lineNumber = cursor.blockNumber();
-    // int columnNumber = cursor.columnNumber();
 }
 
 void CodeEditor::_on_blockCountChanged(int newBlockCount)
@@ -420,6 +470,16 @@ void CodeEditor::_on_updateRequest(const QRect &rect, int dy)
     if (rect.contains(viewport()->rect())){
         updateSideArea();
     }
+}
+
+void CodeEditor::_on_hoverTimeout()
+{
+    QTextCursor cursor = cursorPosByGlobalMousePos(this->hoverGpos);
+    int line = cursor.blockNumber();
+    int col = cursor.positionInBlock();
+    emit hoverCursorTriggered(line, col, this->hoverPos);
+
+    this->hoverTimer->stop();
 }
 
 }

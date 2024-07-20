@@ -1,0 +1,22 @@
+[
+{
+  "directory": "D:/c_workstation/projects/QT-projects/build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug",
+  "command": "D:\\visual_stdio_2022\\VC\\Tools\\MSVC\\14.33.31629\\bin\\HostX64\\x64\\cl.exe  /nologo /TP -ID:\\c_workstation\\projects\\QT-projects\\build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug\\test\\testcode\\CodeEditorTestCode_autogen\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++17 /Fotest\\testcode\\CMakeFiles\\CodeEditorTestCode.dir\\CodeEditorTestCode_autogen\\mocs_compilation.cpp.obj /FdTARGET_COMPILE_PDB /FS -c D:\\c_workstation\\projects\\QT-projects\\build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug\\test\\testcode\\CodeEditorTestCode_autogen\\mocs_compilation.cpp",
+  "file": "D:\\c_workstation\\projects\\QT-projects\\build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug\\test\\testcode\\CodeEditorTestCode_autogen\\mocs_compilation.cpp"
+},
+{
+  "directory": "D:/c_workstation/projects/QT-projects/build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug",
+  "command": "D:\\visual_stdio_2022\\VC\\Tools\\MSVC\\14.33.31629\\bin\\HostX64\\x64\\cl.exe  /nologo /TP -ID:\\c_workstation\\projects\\QT-projects\\build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug\\test\\testcode\\CodeEditorTestCode_autogen\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++17 /Fotest\\testcode\\CMakeFiles\\CodeEditorTestCode.dir\\Food.cpp.obj /FdTARGET_COMPILE_PDB /FS -c D:\\c_workstation\\projects\\QT-projects\\CodeEditor\\test\\testcode\\Food.cpp",
+  "file": "D:\\c_workstation\\projects\\QT-projects\\CodeEditor\\test\\testcode\\Food.cpp"
+},
+{
+  "directory": "D:/c_workstation/projects/QT-projects/build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug",
+  "command": "D:\\visual_stdio_2022\\VC\\Tools\\MSVC\\14.33.31629\\bin\\HostX64\\x64\\cl.exe  /nologo /TP -ID:\\c_workstation\\projects\\QT-projects\\build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug\\third_party\\lsp-cpp\\lsp\\LspCore_autogen\\include -ID:\\c_workstation\\projects\\QT-projects\\CodeEditor\\third_party\\lsp-cpp\\lsp\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++17 /Fothird_party\\lsp-cpp\\lsp\\CMakeFiles\\LspCore.dir\\LspCore_autogen\\mocs_compilation.cpp.obj /FdTARGET_COMPILE_PDB /FS -c D:\\c_workstation\\projects\\QT-projects\\build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug\\third_party\\lsp-cpp\\lsp\\LspCore_autogen\\mocs_compilation.cpp",
+  "file": "D:\\c_workstation\\projects\\QT-projects\\build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug\\third_party\\lsp-cpp\\lsp\\LspCore_autogen\\mocs_compilation.cpp"
+},
+{
+  "directory": "D:/c_workstation/projects/QT-projects/build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug",
+  "command": "D:\\visual_stdio_2022\\VC\\Tools\\MSVC\\14.33.31629\\bin\\HostX64\\x64\\cl.exe  /nologo /TP -ID:\\c_workstation\\projects\\QT-projects\\build-CodeEditor-Desktop_Qt_6_6_1_MSVC2019_64bit-Debug\\third_party\\lsp-cpp\\lsp\\LspCore_autogen\\include -ID:\\c_workstation\\projects\\QT-projects\\CodeEditor\\third_party\\lsp-cpp\\lsp\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++17 /Fothird_party\\lsp-cpp\\lsp\\CMakeFiles\\LspCore.dir\\src\\empty.cpp.obj /FdTARGET_COMPILE_PDB /FS -c D:\\c_workstation\\projects\\QT-projects\\CodeEditor\\third_party\\lsp-cpp\\lsp\\src\\empty.cpp",
+  "file": "D:\\c_workstation\\projects\\QT-projects\\CodeEditor\\third_party\\lsp-cpp\\lsp\\src\\empty.cpp"
+}
+]

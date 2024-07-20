@@ -6,6 +6,11 @@
 #include <QPixmap>
 #include <QMap>
 #include <QApplication>
+#include <QTimer>
+#include <QPoint>
+#include <QListWidget>
+#include <QListWidgetItem>
+
 #include <codeEditor/lineNumberArea.h>
 #include <codeEditor/breakPointArea.h>
 #include <codeEditor/cHighLight.h>
@@ -39,7 +44,7 @@ class CodeEditor : public QPlainTextEdit
 
 public:
     CodeEditor(QWidget* parent = nullptr);
-    ~CodeEditor();
+    virtual ~CodeEditor();
 
     // 设置
     void setLineComponentVisible(bool visible = true);
@@ -49,7 +54,7 @@ public:
     void setWordJumpLink(bool enable = true, Qt::KeyboardModifiers triggerBtn = Qt::ControlModifier);
 
     // 语言特性
-    void addHoverInfoWindow(int line, int col, QString& content);
+    void addHoverInfoWindow(const QString& content, Loaction curosrPos = {});
     void updateHighLight(const QList<Token>& tokenList);
     void updateHighLight(const QList<int>& lspTokenList);
     void addCodeCompletionSuggestions(Loaction pos, const QList<CodeSuggest>& suggestions);
@@ -84,6 +89,12 @@ private:
     QTextCharFormat errorUnderLineFormat;
     QMap<int, QTextCharFormat> tokenFormatMap;
 
+    QTextEdit* hoverInfoWidget{nullptr};
+    QTimer* hoverTimer{nullptr};
+    QPoint hoverPos;
+    QPoint hoverGpos;
+    QListWidget* suggestionsWidget{nullptr};
+
     // 更新小组件
     void updateSideArea();
     // 根据行列生成光标对象
@@ -96,13 +107,16 @@ private:
     void addWordUnderline(QTextCursor &cursor, QTextCharFormat& format);
 
 protected:
-    void wheelEvent(QWheelEvent *e);
-    void resizeEvent(QResizeEvent *event);
+    void wheelEvent(QWheelEvent *e) override;
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mousePressEvent(QMouseEvent *e) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 signals:
     void breakChanged(int line, bool haveBreakPoint);
     void lineChanged(int rangeLeft, int rangeRight, bool isAddLine);
-    void hoverCursorTriggered(int line, int col);
+    void hoverCursorTriggered(int line, int col, QPoint mouse_pos);
+    // void suggestionTriggered(int line, int col, QPoint mouse_pos);
 
 
 public slots:
@@ -110,6 +124,7 @@ public slots:
     void _on_cursorPositionChanged();
     void _on_blockCountChanged(int newBlockCount);
     void _on_updateRequest(const QRect &rect, int dy);
+    void _on_hoverTimeout();
 };
 
 }

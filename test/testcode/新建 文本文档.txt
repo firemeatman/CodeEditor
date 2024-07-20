@@ -1,0 +1,16 @@
+{
+"contents": {
+"kind": "plaintext",
+"value": "class Food\n\nSize: 48 bytes\n\n// In namespace codeEditorTest\nclass Food {}"
+},
+"range": {
+"end": {
+"character": 10,
+"line": 5
+},
+"start": {
+"character": 6,
+"line": 5
+}
+}
+}

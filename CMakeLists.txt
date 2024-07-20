@@ -14,4 +14,4 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 add_subdirectory(codeEditor)
 add_subdirectory(test)
-add_subdirectory(lsp)
+add_subdirectory(third_party)
