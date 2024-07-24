@@ -10,9 +10,10 @@ class GlobalData
 {
 public:
     GlobalData();
-    static std::shared_ptr<ProcessLanguageClient> lspClient;
-    static std::shared_ptr<MapMessageHandler> lspHandle;
-    static std::shared_ptr<std::thread> clientThread;
+    static std::unique_ptr<LanguageClient> lspClient;
+    static std::unique_ptr<MapMessageHandler> lspHandle;
+    static std::unique_ptr<PipJsonIO> jsonIO;
+    static std::unique_ptr<std::thread> clientThread;
 };
 
 }

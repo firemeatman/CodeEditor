@@ -171,7 +171,7 @@ void BreakPointArea::mousePressEvent(QMouseEvent *event)
         QPointF g_pos = event->globalPosition();
         int leftComWidth = boundingTextEdit->getLeftComWidth();
         g_pos.setX(g_pos.x() + leftComWidth);
-        QTextCursor cursor = boundingTextEdit->cursorPosByGlobalMousePos(g_pos.toPoint());
+        QTextCursor cursor = boundingTextEdit->cursorPosFromGlobalMousePos(g_pos.toPoint());
         int lineNum = cursor.blockNumber();
         int index = findPoint(lineNum);
 

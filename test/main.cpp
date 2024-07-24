@@ -10,24 +10,37 @@
 
 using namespace codeEditorTest;
 
-void init(){
-    GlobalData::clientThread = std::make_shared<std::thread>([](){
-        GlobalData::lspClient->loop(*GlobalData::lspHandle);
-        std::this_thread::sleep_for(std::chrono::minutes(50));
+static void init(){
+    GlobalData::clientThread = std::make_unique<std::thread>([](){
+        GlobalData::lspClient->safeLoop();
     });
 }
 
-void relase(){
+static void relase(){
+    GlobalData::lspClient->Exit();
+    GlobalData::lspClient->requestStopLoop();
 
+    if(GlobalData::clientThread->joinable()){
+        GlobalData::clientThread->join();
+    }
 }
+
+struct AppResource
+{
+    AppResource() {
+        init();
+    }
+    ~AppResource(){
+        relase();
+    }
+};
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    init();
     MainWindow w;
+    AppResource res;
     w.show();
     int flag = a.exec();
-    relase();
     return flag;
 }

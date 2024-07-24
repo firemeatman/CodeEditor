@@ -47,6 +47,7 @@ CodeEditor::CodeEditor(QWidget* parent):
 
     //===========================信号===================================
     connect(doc, &QTextDocument::contentsChange, this, &CodeEditor::_on_contentsChange);
+    connect(this, &QPlainTextEdit::textChanged, this, &CodeEditor::_on_textChanged);
     connect(this, &QPlainTextEdit::blockCountChanged, this, &CodeEditor::_on_blockCountChanged);
     connect(this, &QPlainTextEdit::updateRequest, this, &CodeEditor::_on_updateRequest);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &CodeEditor::_on_cursorPositionChanged);
@@ -60,8 +61,6 @@ CodeEditor::~CodeEditor()
     if(cHighLight != nullptr){
         cHighLight->deleteLater();
     }
-    hoverInfoWidget->deleteLater();
-
 }
 
 void CodeEditor::setLineComponentVisible(bool visible)
@@ -198,8 +197,67 @@ void CodeEditor::updateHighLight(const QList<int> &lspTokenList)
 void CodeEditor::addCodeCompletionSuggestions(Loaction pos, const QList<CodeSuggest> &suggestions)
 {
     QTextCursor cursor = generateCursor(pos.line, pos.col);
+    QPoint mousePos = mousePosFromCursor(cursor);
+    QStyle* style = QApplication::style();
+    if(this->suggestionsWidget == nullptr){
+        suggestionsWidget = new QListWidget(this);
+    }
+    suggestionsWidget->show();
+    suggestionsWidget->clear();
+    for(auto& suggestion : suggestions){
+        QListWidgetItem* item = new QListWidgetItem();
+        item->setText(suggestion.str);
+        item->setIcon(style->standardIcon(QStyle::SP_DriveCDIcon));
+        suggestionsWidget->addItem(item);
+    }
+
+    suggestionsWidget->adjustSize();
+    int height = 0;
+    int width = 0;
+    height = suggestionsWidget->verticalScrollBar()->maximum() - suggestionsWidget->verticalScrollBar()->minimum() + suggestionsWidget->verticalScrollBar()->pageStep();
+    width = suggestionsWidget->horizontalScrollBar()->maximum() - suggestionsWidget->horizontalScrollBar()->minimum() + suggestionsWidget->horizontalScrollBar()->pageStep();
+    suggestionsWidget->resize(width, height);
+
+    suggestionsWidget->raise();
+    if(mousePos.x() + suggestionsWidget->width() > this->width()){
+        int x_new = qMax(0, mousePos.x() - hoverInfoWidget->width());
+        mousePos.setX(x_new);
+    }
+    suggestionsWidget->move(mousePos);
 
 
+}
+
+void CodeEditor::updateCodeCompletionSuggestions(CompletionList &list)
+{
+    QPoint mousePos = mousePosFromCursor(lastSuggestionCursor);
+    QStyle* style = QApplication::style();
+    if(this->suggestionsWidget == nullptr){
+        suggestionsWidget = new QListWidget(this);
+    }
+    suggestionsWidget->show();
+    if(list.isIncomplete){}
+    suggestionsWidget->clear();
+    qDebug()<<"建议列表: "<<list.isIncomplete;
+    for(CompletionItem& completion : list.items){
+        qDebug()<<"label "<<completion.label;
+        QListWidgetItem* item = new QListWidgetItem();
+        item->setText(QString::fromStdString(completion.label));
+        item->setIcon(style->standardIcon(QStyle::SP_DriveCDIcon));
+        suggestionsWidget->addItem(item);
+    }
+    suggestionsWidget->adjustSize();
+    int height = 200;
+    int width = 250;
+    width = suggestionsWidget->horizontalScrollBar()->maximum() - suggestionsWidget->horizontalScrollBar()->minimum() + suggestionsWidget->horizontalScrollBar()->pageStep();
+    suggestionsWidget->resize(width, height);
+
+    suggestionsWidget->raise();
+    if(mousePos.x() + suggestionsWidget->width() > this->width()){
+        int x_new = qMax(0, mousePos.x() - hoverInfoWidget->width());
+        mousePos.setX(x_new);
+    }
+    suggestionsWidget->move(mousePos);
 }
 
 void CodeEditor::addDiagnosis(const QList<DiagnosisInfo> &infoList)
@@ -210,21 +268,6 @@ void CodeEditor::addDiagnosis(const QList<DiagnosisInfo> &infoList)
 void CodeEditor::clearDiagnosis()
 {
 
-}
-
-QTextCursor CodeEditor::cursorPosByGlobalMousePos(QPoint g_mousePos)
-{
-    QWidget* viewPort = this->viewport();
-    QPoint posInViewPort = viewPort->mapFromGlobal(g_mousePos);
-    return cursorForPosition(posInViewPort);
-}
-
-QTextCursor CodeEditor::cursorPosByMousePos(QPoint mousePos, QWidget *from)
-{
-    QWidget* viewPort = this->viewport();
-    QPoint posInViewPort = viewPort->mapFrom(from, mousePos);
-
-    return cursorForPosition(posInViewPort);
 }
 
 int CodeEditor::countLineNumberWigetWidth() const
@@ -251,6 +294,49 @@ int CodeEditor::getLeftComWidth() const
 {
     return countLineNumberWigetWidth() + countBreakPointWigetWidth();
 }
+
+QTextCursor CodeEditor::cursorPosFromGlobalMousePos(QPoint g_mousePos)
+{
+    QWidget* viewPort = this->viewport();
+    QPoint posInViewPort = viewPort->mapFromGlobal(g_mousePos);
+    return cursorForPosition(posInViewPort);
+}
+
+QTextCursor CodeEditor::cursorPosFromMousePos(QPoint mousePos, QWidget *from)
+{
+    QWidget* viewPort = this->viewport();
+    QPoint posInViewPort = viewPort->mapFrom(from, mousePos);
+
+    return cursorForPosition(posInViewPort);
+}
+
+QPoint CodeEditor::mousePosFromCursor(QTextCursor &cursor)
+{
+    QPoint pos;
+    int line = cursor.blockNumber();
+    int height = 0;
+    int width = 0;
+    // 计算y
+    QTextBlock block = this->firstVisibleBlock();
+    for(int i=0;i<=line;++i){
+        if(block.isValid() && block.isVisible()){
+            height = height + qRound(this->blockBoundingRect(block).height());
+        }
+        block.next();
+    }
+    // 计算x
+    qreal fontSize = cursor.charFormat().fontPointSize();
+    QTextCursor tempCursor(cursor);
+    tempCursor.movePosition(QTextCursor::MoveOperation::StartOfLine, QTextCursor::MoveMode::KeepAnchor);
+    QString lineSelectedStr = tempCursor.selectedText();
+    width = fontSize * lineSelectedStr.length();
+
+    pos.setX(width);
+    pos.setY(height);
+
+    return pos;
+}
+
 
 void CodeEditor::wheelEvent(QWheelEvent *e)
 {
@@ -300,8 +386,10 @@ void CodeEditor::mousePressEvent(QMouseEvent *e)
     if (btn == Qt::LeftButton || btn == Qt::RightButton)
     {
         if(hoverInfoWidget){
-            hoverInfoWidget->clear();
             hoverInfoWidget->hide();
+        }
+        if(suggestionsWidget){
+            suggestionsWidget->hide();
         }
 
     }
@@ -443,10 +531,20 @@ void CodeEditor::_on_contentsChange(int position, int charsRemoved, int charsAdd
     this->breakPointArea->updatePointLine(rangeLeft, rangeRight, isAdd);
 }
 
+void CodeEditor::_on_textChanged()
+{
+    QTextCursor cursor = this->textCursor();
+    int line = cursor.blockNumber();
+    int col = cursor.positionInBlock();
+
+    lastSuggestionCursor = cursor;
+
+    emit completionSuggestTriggered(line, col);
+}
+
 
 void CodeEditor::_on_cursorPositionChanged()
 {
-
 
 }
 
@@ -474,7 +572,7 @@ void CodeEditor::_on_updateRequest(const QRect &rect, int dy)
 
 void CodeEditor::_on_hoverTimeout()
 {
-    QTextCursor cursor = cursorPosByGlobalMousePos(this->hoverGpos);
+    QTextCursor cursor = cursorPosFromGlobalMousePos(this->hoverGpos);
     int line = cursor.blockNumber();
     int col = cursor.positionInBlock();
     emit hoverCursorTriggered(line, col, this->hoverPos);

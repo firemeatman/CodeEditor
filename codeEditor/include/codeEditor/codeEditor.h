@@ -14,6 +14,8 @@
 #include <codeEditor/lineNumberArea.h>
 #include <codeEditor/breakPointArea.h>
 #include <codeEditor/cHighLight.h>
+#include <lsp/protocol.h>
+
 namespace codeEditor {
 
 struct Loaction
@@ -58,6 +60,7 @@ public:
     void updateHighLight(const QList<Token>& tokenList);
     void updateHighLight(const QList<int>& lspTokenList);
     void addCodeCompletionSuggestions(Loaction pos, const QList<CodeSuggest>& suggestions);
+    void updateCodeCompletionSuggestions(CompletionList& list);
     void addDiagnosis(const QList<DiagnosisInfo>& infoList);
     void clearDiagnosis();
 
@@ -77,8 +80,11 @@ public:
     int countBreakPointWigetWidth() const;
     int getLeftComWidth() const;
     // 根据（全局）鼠标指针位置计算对应编辑器中的光标
-    QTextCursor cursorPosByGlobalMousePos(QPoint g_mousePos);
-    QTextCursor cursorPosByMousePos(QPoint mousePos, QWidget* from);
+    QTextCursor cursorPosFromGlobalMousePos(QPoint g_mousePos);
+    QTextCursor cursorPosFromMousePos(QPoint mousePos, QWidget* from);
+    // 根据光标计算鼠标位置
+    QPoint mousePosFromCursor(QTextCursor& cursor);
+
 private:
 
     LineNumberArea* lineNumberArea = nullptr;
@@ -93,7 +99,9 @@ private:
     QTimer* hoverTimer{nullptr};
     QPoint hoverPos;
     QPoint hoverGpos;
+
     QListWidget* suggestionsWidget{nullptr};
+    QTextCursor lastSuggestionCursor;
 
     // 更新小组件
     void updateSideArea();
@@ -116,11 +124,12 @@ signals:
     void breakChanged(int line, bool haveBreakPoint);
     void lineChanged(int rangeLeft, int rangeRight, bool isAddLine);
     void hoverCursorTriggered(int line, int col, QPoint mouse_pos);
-    // void suggestionTriggered(int line, int col, QPoint mouse_pos);
+    void completionSuggestTriggered(int line, int col);
 
 
 public slots:
     void _on_contentsChange(int position, int charsRemoved, int charsAdded);
+    void _on_textChanged();
     void _on_cursorPositionChanged();
     void _on_blockCountChanged(int newBlockCount);
     void _on_updateRequest(const QRect &rect, int dy);

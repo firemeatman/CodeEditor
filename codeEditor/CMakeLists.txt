@@ -45,7 +45,7 @@ add_library(
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 # target_link_libraries(${PROJECT_NAME} PUBLIC LSP_client)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(${PROJECT_NAME} PUBLIC LspCore PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

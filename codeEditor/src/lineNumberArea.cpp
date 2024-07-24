@@ -51,7 +51,7 @@ void LineNumberArea::paintEvent(QPaintEvent *event)
     //                  返回对进行偏移offset的矩形,这里的块的顶部坐标为内容偏移的坐标；
     int top = qRound((boundingTextEditForce->blockBoundingGeometry(block)).translated(boundingTextEditForce->contentOffset()).top());
     //int top = qRound(blockBoundingGeometry(block).top());
-    int height = qRound(boundingTextEditForce->blockBoundingRect(block).height()); // 假设每一块的高度一样
+    int height = qRound(boundingTextEditForce->blockBoundingRect(block).height());
     int bottom = top + height;
 
     // 如果块有效

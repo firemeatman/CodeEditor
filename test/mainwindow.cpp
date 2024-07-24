@@ -6,7 +6,6 @@
 #include <QDockWidget>
 #include <iostream>
 #include "globaldata.h"
-#include "lspevent.h"
 #include "lspqthandler.h"
 namespace codeEditorTest {
 using namespace codeEditor;
@@ -46,22 +45,10 @@ MainWindow::MainWindow(QWidget *parent)
         fileListWidget->addItem(item);
     }
     // lsp
-
-    GlobalData::lspHandle->bindNotify(METHOD_PublishDiagnostics.c_str(), [](value & j){
-        // std::string str = j.dump();
-        // std::cout<<str<<std::endl;
-    });
-
-
-
     std::string uri = workingPath.toStdString();
     uri.insert(0,"file:///");
     DocumentUri docUri = uri;
-
-    GlobalData::lspHandle->bindResponse(GlobalData::lspClient->Initialize(docUri).c_str(), [](value & j){
-        std::string str = j.dump();
-        std::cout<<str<<std::endl;
-    });
+    GlobalData::lspClient->Initialize(docUri);
 
     //==============================信号====================================
     connect(tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::_on_tabCloseRequested);
@@ -73,25 +60,6 @@ MainWindow::~MainWindow()
     tabWidget->clear();
     qDeleteAll(codeEditorMap);
 
-    GlobalData::lspClient->Exit();
-    GlobalData::clientThread.reset();
-    //GlobalData::clientThread->detach();
-}
-
-void MainWindow::_on_hoverCursorTriggered(int line, int col, QPoint mouse_pos)
-{
-    // 悬浮提示
-
-    Position pos = {line, col};
-    int index = tabWidget->currentIndex();
-    std::string uri = tabWidget->tabToolTip(index).toStdString();
-    uri.insert(0,"file:///");
-    qDebug()<<"触发悬停: ("<<line<<","<<col<<") "<<uri;
-    GlobalData::lspHandle->bindResponse(GlobalData::lspClient->Hover(uri, pos), [](value & j){
-        qDebug()<<"发生事件";
-        LspEvent* event = new LspEvent(j,METHOD_Hover,qEventRecvMsg);
-        QCoreApplication::postEvent(LspQtHandler::instance(), event);
-    });
 }
 
 void MainWindow::_on_ListCurrentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
@@ -124,7 +92,9 @@ void MainWindow::_on_ListCurrentItemChanged(QListWidgetItem *current, QListWidge
         }
         file.close();
         connect(codeEditor, &CodeEditor::hoverCursorTriggered, this, &MainWindow::_on_hoverCursorTriggered);
+        connect(codeEditor, &CodeEditor::completionSuggestTriggered, this, &MainWindow::_on_suggestionTriggered);
         connect(LspQtHandler::instance(), &LspQtHandler::hoverFinished, this, &MainWindow::_on_HoverRecved);
+        connect(LspQtHandler::instance(), &LspQtHandler::completionSuggestFinished, this, &MainWindow::_on_completionSuggestFinished);
         // lsp打开文件请求
         std::string uri = path.toStdString();
         uri.insert(0, "file:///");
@@ -158,8 +128,29 @@ void MainWindow::_on_tabCloseRequested(int index)
 
 void MainWindow::_on_tabCurrentChanged(int index)
 {
-    qDebug()<<index;
-    qDebug()<<tabWidget->currentIndex();
+    // qDebug()<<index;
+    // qDebug()<<tabWidget->currentIndex();
+}
+
+void MainWindow::_on_hoverCursorTriggered(int line, int col, QPoint mouse_pos)
+{
+    // 悬浮提示
+    Position pos = {line, col};
+    int index = tabWidget->currentIndex();
+    std::string uri = tabWidget->tabToolTip(index).toStdString();
+    uri.insert(0,"file:///");
+    GlobalData::lspClient->Hover(uri, pos);
+}
+
+void MainWindow::_on_suggestionTriggered(int line, int col)
+{
+    Position pos = {line, col};
+    int index = tabWidget->currentIndex();
+    std::string uri = tabWidget->tabToolTip(index).toStdString();
+    uri.insert(0,"file:///");
+    CompletionContext context;
+    GlobalData::lspClient->Completion(uri, pos, context);
+    GlobalData::lspClient->SignatureHelp(uri, pos);
 }
 
 void MainWindow::_on_HoverRecved(QString &str)
@@ -169,6 +160,14 @@ void MainWindow::_on_HoverRecved(QString &str)
     if(str.isEmpty())return;
 
     editor->addHoverInfoWindow(str);
+}
+
+void MainWindow::_on_completionSuggestFinished(CompletionList &list)
+{
+    CodeEditor* editor =static_cast<CodeEditor*>(this->tabWidget->currentWidget());
+    if(!editor) return;
+
+    editor->updateCodeCompletionSuggestions(list);
 }
 
 }
