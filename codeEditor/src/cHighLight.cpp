@@ -52,7 +52,7 @@ void CHighlight::highlightBlock(const QString &text)
     //QRegularExpression
     QRegularExpressionMatchIterator matchIterator;
     QRegularExpressionMatch match;
-    for (const HighlightingRule &rule : qAsConst(highlightingRules)) {
+    for (const HighlightingRule &rule : std::as_const(highlightingRules)) {
         matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             match = matchIterator.next();

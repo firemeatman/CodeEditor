@@ -10,9 +10,9 @@ class GlobalData
 {
 public:
     GlobalData();
-    static std::unique_ptr<LanguageClient> lspClient;
-    static std::unique_ptr<MapMessageHandler> lspHandle;
-    static std::unique_ptr<PipJsonIO> jsonIO;
+    static std::unique_ptr<LspCore::LanguageClient> lspClient;
+    static std::unique_ptr<LspCore::MapMessageHandler> lspHandle;
+    static std::unique_ptr<LspCore::PipJsonIO> jsonIO;
     static std::unique_ptr<std::thread> clientThread;
 };
 

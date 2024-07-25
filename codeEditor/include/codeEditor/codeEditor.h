@@ -14,7 +14,6 @@
 #include <codeEditor/lineNumberArea.h>
 #include <codeEditor/breakPointArea.h>
 #include <codeEditor/cHighLight.h>
-#include <lsp/protocol.h>
 
 namespace codeEditor {
 
@@ -60,7 +59,6 @@ public:
     void updateHighLight(const QList<Token>& tokenList);
     void updateHighLight(const QList<int>& lspTokenList);
     void addCodeCompletionSuggestions(Loaction pos, const QList<CodeSuggest>& suggestions);
-    void updateCodeCompletionSuggestions(CompletionList& list);
     void addDiagnosis(const QList<DiagnosisInfo>& infoList);
     void clearDiagnosis();
 

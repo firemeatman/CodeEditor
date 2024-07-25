@@ -4,6 +4,7 @@
 #include "globaldata.h"
 #include <iostream>
 namespace codeEditorTest {
+using namespace LspCore;
 
 LspQtHandler* LspQtHandler::instance()
 {

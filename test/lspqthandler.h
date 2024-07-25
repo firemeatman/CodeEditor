@@ -2,7 +2,6 @@
 #define LSPQTHANDLER_H
 
 #include <QObject>
-#include <memory>
 #include <lsp/protocol.h>
 
 namespace codeEditorTest {
@@ -18,7 +17,7 @@ protected:
     void customEvent(QEvent* e) override;
 signals:
     void hoverFinished(QString& content);
-    void completionSuggestFinished(CompletionList& list);
+    void completionSuggestFinished(LspCore::CompletionList& list);
 };
 
 }

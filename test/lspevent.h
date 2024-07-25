@@ -6,6 +6,8 @@
 #include <lsp/protocol.h>
 namespace codeEditorTest {
 
+using json = nlohmann::json;
+
 const static QEvent::Type qEventJRPCRequest = (QEvent::Type)(QEvent::User + 1);
 const static QEvent::Type qEventJRPCResponse = (QEvent::Type)(QEvent::User + 2);
 const static QEvent::Type qEventJRPCNotify = (QEvent::Type)(QEvent::User + 3);

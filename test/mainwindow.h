@@ -31,7 +31,7 @@ public slots:
     void _on_hoverCursorTriggered(int line, int col, QPoint mouse_pos);
     void _on_suggestionTriggered(int line, int col);
     void _on_HoverRecved(QString& str);
-    void _on_completionSuggestFinished(CompletionList& list);
+    void _on_completionSuggestFinished(LspCore::CompletionList& list);
 };
 
 }

@@ -3,13 +3,8 @@
 #include <QDebug>
 #include "globaldata.h"
 
-// namespace codeEditorTest {
-
-
-// }
-
 using namespace codeEditorTest;
-
+using namespace LspCore;
 static void init(){
     GlobalData::clientThread = std::make_unique<std::thread>([](){
         GlobalData::lspClient->safeLoop();
@@ -34,6 +29,7 @@ struct AppResource
         relase();
     }
 };
+
 
 int main(int argc, char *argv[])
 {

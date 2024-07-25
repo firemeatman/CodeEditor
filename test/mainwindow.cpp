@@ -9,7 +9,7 @@
 #include "lspqthandler.h"
 namespace codeEditorTest {
 using namespace codeEditor;
-
+using namespace LspCore;
 QString workingPath = "D:/c_workstation/projects/QT-projects/CodeEditor/test/testcode";
 
 
@@ -167,7 +167,6 @@ void MainWindow::_on_completionSuggestFinished(CompletionList &list)
     CodeEditor* editor =static_cast<CodeEditor*>(this->tabWidget->currentWidget());
     if(!editor) return;
 
-    editor->updateCodeCompletionSuggestions(list);
 }
 
 }

@@ -225,40 +225,8 @@ void CodeEditor::addCodeCompletionSuggestions(Loaction pos, const QList<CodeSugg
     }
     suggestionsWidget->move(mousePos);
 
-
 }
 
-void CodeEditor::updateCodeCompletionSuggestions(CompletionList &list)
-{
-    QPoint mousePos = mousePosFromCursor(lastSuggestionCursor);
-    QStyle* style = QApplication::style();
-    if(this->suggestionsWidget == nullptr){
-        suggestionsWidget = new QListWidget(this);
-    }
-    suggestionsWidget->show();
-    if(list.isIncomplete){}
-    suggestionsWidget->clear();
-    qDebug()<<"建议列表: "<<list.isIncomplete;
-    for(CompletionItem& completion : list.items){
-        qDebug()<<"label "<<completion.label;
-        QListWidgetItem* item = new QListWidgetItem();
-        item->setText(QString::fromStdString(completion.label));
-        item->setIcon(style->standardIcon(QStyle::SP_DriveCDIcon));
-        suggestionsWidget->addItem(item);
-    }
-    suggestionsWidget->adjustSize();
-    int height = 200;
-    int width = 250;
-    width = suggestionsWidget->horizontalScrollBar()->maximum() - suggestionsWidget->horizontalScrollBar()->minimum() + suggestionsWidget->horizontalScrollBar()->pageStep();
-    suggestionsWidget->resize(width, height);
-
-    suggestionsWidget->raise();
-    if(mousePos.x() + suggestionsWidget->width() > this->width()){
-        int x_new = qMax(0, mousePos.x() - hoverInfoWidget->width());
-        mousePos.setX(x_new);
-    }
-    suggestionsWidget->move(mousePos);
-}
 
 void CodeEditor::addDiagnosis(const QList<DiagnosisInfo> &infoList)
 {
